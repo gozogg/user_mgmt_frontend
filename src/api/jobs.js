@@ -1,7 +1,9 @@
 import { request } from "./http"
 
-export function getJobs() {
-  return request("/jobs")
+export function getJobs({client_id} = {}) {
+  const params = new URLSearchParams()
+  if (client_id) params.set("client_id", client_id)
+  return request(`/jobs?${params}`)
 }
 
 export function createJob(job) {
