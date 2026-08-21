@@ -1,4 +1,4 @@
-import { Link, useNavigate, useParams } from "react-router-dom"
+import { Link, useNavigate, useParams, useLocation } from "react-router-dom"
 import { useEffect, useState } from "react"
 import { deleteJob, getJobs } from "../api/jobs"
 import { getJobDates, updateJobDate } from "../api/jobDates"
@@ -17,6 +17,8 @@ export default function JobDetailPage() {
   const [formOpened, setFormOpened] = useState(false)
   const [error, setError] = useState(null)
   const [savingDate, setSavingDate] = useState(null)
+  const location = useLocation()
+  const backTo = location.state?.from ?? "/jobs"
 
   function loadJob() {
     setError(null)
@@ -77,7 +79,7 @@ export default function JobDetailPage() {
       <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
           <Link
-            to={job?.client_id ? `/clients/${job.client_id}` : "/jobs"}
+            to={backTo}
             className="text-sm font-medium text-slate-500 transition hover:text-slate-800"
           >
             ← Back
@@ -86,7 +88,7 @@ export default function JobDetailPage() {
             {job?.description || "Job"}
           </h1>
           <p className="mt-1 text-slate-600">
-            Job #{id}
+            {job?.first_name} {job?.last_name}
             {job?.frequency ? ` · ${job.frequency}` : ""}
             {` · ${price}`}
           </p>
@@ -147,6 +149,12 @@ export default function JobDetailPage() {
               <i className="fa-solid fa-dollar-sign w-4 text-center text-slate-400"></i>
               <span>{price}</span>
             </div>
+            {job?.day_of_week && (
+            <div className="flex items-center gap-2">
+              <i className="fa-solid fa-location-dot w-4 text-center text-slate-400"></i>
+              <span>{job.address}, {job.city}</span>
+            </div>
+            )}
           </div>
         </div>
 

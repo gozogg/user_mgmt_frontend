@@ -1,12 +1,14 @@
-import { Link } from "react-router-dom"
+import { Link, useLocation } from "react-router-dom"
 
 export default function JobOccurrenceBlock({ job }) {
   const isOnetime = job.frequency === "onetime"
   const price = job.price != null ? Number(job.price) : null
+  const location = useLocation()
 
   return (
     <Link
       to={`/jobs/${job.id}`}
+      state={{ from: location.pathname }}
       className="group flex h-full flex-col rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-slate-300 hover:shadow-md"
     >
       <div className="mb-4 flex items-start justify-between gap-3">
@@ -14,7 +16,7 @@ export default function JobOccurrenceBlock({ job }) {
           <h2 className="truncate text-lg font-semibold text-slate-900 group-hover:text-slate-700">
             {job.description || "Untitled job"}
           </h2>
-          <p className="text-xs text-slate-500">Job #{job.id}</p>
+          <p className="text-xs text-slate-500">{job.first_name} {job.last_name}</p>
         </div>
         {job.frequency && (
           <span className="shrink-0 rounded-md bg-slate-100 px-2 py-1 text-xs font-medium capitalize text-slate-700">

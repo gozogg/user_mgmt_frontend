@@ -1,44 +1,54 @@
 import { NavLink, Outlet } from "react-router-dom"
-import { useState } from "react"
+
+const navItems = [
+  { to: "/day", label: "Daily", icon: "fa-calendar-day" },
+  { to: "/week", label: "Weekly", icon: "fa-calendar-days" },
+  { to: "/clients", label: "Clients", icon: "fa-users" },
+  { to: "/jobs", label: "Jobs", icon: "fa-briefcase" },
+]
+
+function linkClass({ isActive }) {
+  return [
+    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition",
+    isActive
+      ? "bg-slate-700 text-white shadow-sm"
+      : "text-slate-300 hover:bg-slate-800 hover:text-white",
+  ].join(" ")
+}
 
 export default function Layout() {
-  const [page, setPage] = useState("")
-
-  function handleClick(page) {
-    setPage(page)
-  }
-
   return (
-    <div className="flex h-screen">
-    <div className="hidden md:flex flex-col w-64 bg-gray-800 h-screen">
-        <div className="flex items-center justify-center h-16 bg-gray-900">
-            <NavLink to="/" onClick={() => handleClick('home')} className="text-white font-bold uppercase">User Management</NavLink>
+    <div className="flex h-screen bg-slate-50">
+      <aside className="hidden h-screen w-64 shrink-0 flex-col border-r border-slate-900/40 bg-slate-900 md:flex">
+        <div className="flex h-16 items-center gap-3 border-b border-slate-800 px-5">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-700 text-white">
+            <i className="fa-solid fa-layer-group text-sm"></i>
+          </div>
+          <div className="min-w-0">
+            <NavLink to="/" className="block truncate text-sm font-semibold text-white">
+              User Management
+            </NavLink>
+            <p className="truncate text-xs text-slate-400">Jobs & clients</p>
+          </div>
         </div>
-        <div className="flex flex-col flex-1 overflow-y-auto">
-            <nav className="flex-1 px-2 py-4 bg-gray-800">
-              <div className={`flex items-center px-4 py-2 text-gray-100 hover:bg-gray-700 gap-3 ${page == 'daily' ? 'bg-gray-700': ''}`}>
-                <i className="fa-solid fa-calendar-day"></i>
-                <NavLink to="/day" onClick={() => handleClick('daily')}>Daily</NavLink>
-              </div>
-              <div className={`flex items-center px-4 py-2 text-gray-100 hover:bg-gray-700 gap-3 ${page == 'weekly' ? 'bg-gray-700': ''}`}>
-              <i className="fa-solid fa-calendar-days"></i>
-                <NavLink to="/week" onClick={() => handleClick('weekly')}>Weekly</NavLink>
-              </div>
-              <div className={`flex items-center px-4 py-2 text-gray-100 hover:bg-gray-700 gap-3 ${page == 'clients' ? 'bg-gray-700': ''}`}>
-              <i className="fa-solid fa-user"></i>
-                <NavLink to="/clients" onClick={() => handleClick('clients')}>Clients</NavLink>
-              </div>
-              <div className={`flex items-center px-4 py-2 text-gray-100 hover:bg-gray-700 gap-3 ${page == 'jobs' ? 'bg-gray-700': ''}`}>
-              <i className="fa-solid fa-briefcase"></i>
-                <NavLink to="/jobs" onClick={() => handleClick('jobs')}>Jobs</NavLink>
-              </div>
-              {/* <div className="flex items-center px-4 py-2 text-gray-100 hover:bg-gray-700 gap-3">
-                <i className="fa-solid fa-calendar-day"></i>
-                <NavLink to="/map" onClick={handleClick('map')}>Map</NavLink>
-              </div> */}
-            </nav>
+
+        <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
+          <p className="px-3 pb-2 pt-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+            Menu
+          </p>
+          {navItems.map((item) => (
+            <NavLink key={item.to} to={item.to} className={linkClass}>
+              <i className={`fa-solid ${item.icon} w-4 text-center text-xs opacity-80`}></i>
+              {item.label}
+            </NavLink>
+          ))}
+        </nav>
+
+        <div className="border-t border-slate-800 p-4">
+          <p className="text-xs text-slate-500">Manage schedules and clients</p>
         </div>
-      </div>
+      </aside>
+
       <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <Outlet />
       </main>
