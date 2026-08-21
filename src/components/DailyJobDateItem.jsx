@@ -1,31 +1,38 @@
 import { Link } from "react-router-dom"
+import { useState } from "react"
+import {
+  JOB_DATE_STATUSES,
+  jobDateCardClass,
+  jobDateStatusLabel,
+} from "../utils/jobDateStatus"
+import JobDateForm from "./JobDateForm"
 
-function formatDate(value) {
-  if (!value) return ""
-  return String(value).slice(0, 10)
-}
-
-export default function DailyJobDateItem({ row, onToggleStatus, isSaving }) {
-  const date = formatDate(row.date)
-  const isComplete = row.status === "complete"
+export default function DailyJobDateItem({
+  row,
+  onStatusChange,
+  onDateChange,
+  onDelete,
+  isSaving,
+  from = "/day",
+  compact = false,
+}) {
+  const [formOpened, setFormOpened] = useState(false)
   const clientName = [row.first_name, row.last_name].filter(Boolean).join(" ")
-  const price =
-    row.price != null && !Number.isNaN(Number(row.price))
-      ? Number(row.price).toLocaleString("en-US", { style: "currency", currency: "USD" })
-      : null
 
   return (
     <li
-      className={`rounded-xl border bg-white p-4 shadow-sm transition ${
-        isComplete ? "border-green-200 bg-green-50/40" : "border-slate-200"
-      }`}
+      className={`rounded-xl border shadow-sm transition ${
+        compact ? "p-3" : "p-4"
+      } ${jobDateCardClass(row.status)}`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <Link
             to={`/jobs/${row.job_id}`}
-            state={{ from: "/day" }}
-            className="block truncate font-semibold text-slate-900 hover:text-slate-700"
+            state={{ from }}
+            className={`block truncate font-semibold text-slate-900 hover:text-slate-700 ${
+              compact ? "text-sm" : ""
+            }`}
           >
             {row.description || "Untitled job"}
           </Link>
@@ -36,17 +43,30 @@ export default function DailyJobDateItem({ row, onToggleStatus, isSaving }) {
             </p>
           )}
         </div>
-        <span
-          className={`shrink-0 rounded-md px-2 py-1 text-xs font-medium capitalize ${
-            isComplete
-              ? "bg-green-100 text-green-800"
-              : "bg-slate-100 text-slate-700"
-          }`}
-        >
-          {isComplete ? "complete" : "not complete"}
-        </span>
+      
+        <div className="flex shrink-0 gap-1">
+          <button
+            type="button"
+            title="Edit date"
+            onClick={() => setFormOpened(true)}
+            className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-300 text-slate-600 transition hover:bg-slate-100"
+          >
+            <i className="fa-solid fa-pencil text-xs"></i>
+          </button>
+          <button
+            type="button"
+            title="Delete date"
+            disabled={isSaving}
+            onClick={() => onDelete?.(row)}
+            className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-red-200 text-red-700 transition hover:bg-red-50 disabled:opacity-60"
+          >
+            <i className="fa-solid fa-trash text-xs"></i>
+          </button>
+        </div>
+        
       </div>
 
+      <div className="flex items-start justify-between gap-3">
       <div className="mt-3 space-y-1.5 text-sm text-slate-600">
         {row.address && (
           <div className="flex items-start gap-2">
@@ -57,37 +77,49 @@ export default function DailyJobDateItem({ row, onToggleStatus, isSaving }) {
             </span>
           </div>
         )}
-        {price && (
-          <div className="flex items-center gap-2">
-            <i className="fa-solid fa-dollar-sign w-4 text-center text-slate-400"></i>
-            <span>{price}</span>
-          </div>
-        )}
       </div>
 
-      <div className="mt-4 flex justify-end">
-        <button
-          type="button"
-          disabled={isSaving}
-          onClick={() => onToggleStatus(row)}
-          className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition disabled:opacity-60 ${
-            isComplete
-              ? "border border-slate-300 bg-white text-slate-700 hover:bg-slate-100"
-              : "bg-slate-800 text-white hover:bg-slate-700"
-          }`}
-        >
-          <i
-            className={`fa-solid text-xs ${
-              isComplete ? "fa-rotate-left" : "fa-check"
-            }`}
-          ></i>
-          {isSaving
-            ? "Saving..."
-            : isComplete
-              ? "Mark incomplete"
-              : "Mark complete"}
-        </button>
+      <div className="mt-3">
+        <label className="block text-xs font-medium text-slate-500">
+          <select
+            value={row.status || "not_complete"}
+            disabled={isSaving}
+            onChange={(e) => onStatusChange(row, e.target.value)}
+            className="mt-1.5 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none focus:border-slate-500 focus:ring-2 focus:ring-slate-200 disabled:opacity-60"
+          >
+            {JOB_DATE_STATUSES.map((status) => (
+              <option key={status} value={status}>
+                {jobDateStatusLabel(status)}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
+      </div>
+
+      {formOpened && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onClick={() => setFormOpened(false)}
+        >
+          <div
+            className="w-full max-w-md rounded-xl bg-white p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="mb-5 text-center text-lg font-bold text-slate-900">
+              Edit job date
+            </h2>
+            <JobDateForm
+              row={row}
+              onCancel={() => setFormOpened(false)}
+              onSuccess={(newDate) => {
+                setFormOpened(false)
+                onDateChange?.(row, newDate)
+              }}
+            />
+          </div>
+        </div>
+      )}
     </li>
   )
 }

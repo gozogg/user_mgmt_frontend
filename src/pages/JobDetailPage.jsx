@@ -3,6 +3,12 @@ import { useEffect, useState, useMemo } from "react"
 import { deleteJob, getJobs } from "../api/jobs"
 import { getJobDates, updateJobDate } from "../api/jobDates"
 import NewJobForm from "../components/NewJobForm"
+import {
+  JOB_DATE_STATUSES,
+  jobDateStatusClass,
+  jobDateStatusIcon,
+  jobDateStatusLabel,
+} from "../utils/jobDateStatus"
 
 function formatDate(value) {
   if (!value) return ""
@@ -25,6 +31,9 @@ export default function JobDetailPage() {
     return sum.toLocaleString("en-US", { style: "currency", currency: "USD" })
   }, [jobDates])
 
+  const completedCount = jobDates.filter((row) => row.status === "complete").length
+  const invoicedCount = jobDates.filter((row) => row.status === "invoiced").length
+
   function loadJob() {
     setError(null)
     getJobs({ job_id: id })
@@ -44,16 +53,15 @@ export default function JobDetailPage() {
     loadJobDates()
   }, [id])
 
-  async function handleToggleStatus(row) {
+  async function handleStatusChange(row, status) {
     const date = formatDate(row.date)
-    const nextStatus = row.status === "complete" ? "not_complete" : "complete"
     setSavingDate(date)
     setError(null)
     try {
-      await updateJobDate(id, date, { status: nextStatus })
+      await updateJobDate(id, date, { status })
       setJobDates((prev) =>
         prev.map((item) =>
-          formatDate(item.date) === date ? { ...item, status: nextStatus } : item
+          formatDate(item.date) === date ? { ...item, status } : item
         )
       )
     } catch (err) {
@@ -125,7 +133,7 @@ export default function JobDetailPage() {
         </p>
       )}
 
-      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:col-span-2">
           <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Details</p>
           <div className="mt-3 space-y-2 text-sm text-slate-700">
@@ -170,15 +178,20 @@ export default function JobDetailPage() {
 
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
           <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Completed</p>
-          <p className="mt-3 text-2xl font-semibold text-slate-900">
-            {jobDates.filter((row) => row.status === "complete").length}
-          </p>
+          <p className="mt-3 text-2xl font-semibold text-slate-900">{completedCount}</p>
+        </div>
+
+        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Invoiced</p>
+          <p className="mt-3 text-2xl font-semibold text-slate-900">{invoicedCount}</p>
         </div>
       </div>
 
       <div className="mb-4">
         <h2 className="text-lg font-semibold text-slate-900">Scheduled dates</h2>
-        <p className="mt-1 text-sm text-slate-500">Toggle status to mark a visit complete.</p>
+        <p className="mt-1 text-sm text-slate-500">
+          Update status to not complete, complete, or invoiced.
+        </p>
       </div>
 
       {!jobDates.length ? (
@@ -190,7 +203,6 @@ export default function JobDetailPage() {
         <ul className="space-y-3">
           {jobDates.map((row) => {
             const date = formatDate(row.date)
-            const isComplete = row.status === "complete"
             const isSaving = savingDate === date
 
             return (
@@ -199,35 +211,29 @@ export default function JobDetailPage() {
                 className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm"
               >
                 <div className="flex items-center gap-3">
-                  <i
-                    className={`fa-solid ${
-                      isComplete ? "fa-circle-check text-green-600" : "fa-circle text-slate-300"
-                    }`}
-                  ></i>
+                  <i className={`fa-solid ${jobDateStatusIcon(row.status)}`}></i>
                   <div>
                     <p className="font-medium text-slate-900">{date}</p>
-                    <p className="text-xs capitalize text-slate-500">
-                      {isComplete ? "complete" : "not complete"}
-                    </p>
+                    <span
+                      className={`mt-1 inline-flex rounded-md px-2 py-0.5 text-xs font-medium ${jobDateStatusClass(row.status)}`}
+                    >
+                      {jobDateStatusLabel(row.status)}
+                    </span>
                   </div>
                 </div>
 
-                <button
-                  type="button"
+                <select
+                  value={row.status || "not_complete"}
                   disabled={isSaving}
-                  onClick={() => handleToggleStatus(row)}
-                  className={`rounded-lg px-3 py-2 text-sm font-medium transition disabled:opacity-60 ${
-                    isComplete
-                      ? "border border-slate-300 bg-white text-slate-700 hover:bg-slate-100"
-                      : "bg-slate-800 text-white hover:bg-slate-700"
-                  }`}
+                  onChange={(e) => handleStatusChange(row, e.target.value)}
+                  className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none focus:border-slate-500 focus:ring-2 focus:ring-slate-200 disabled:opacity-60"
                 >
-                  {isSaving
-                    ? "Saving..."
-                    : isComplete
-                      ? "Mark incomplete"
-                      : "Mark complete"}
-                </button>
+                  {JOB_DATE_STATUSES.map((status) => (
+                    <option key={status} value={status}>
+                      {jobDateStatusLabel(status)}
+                    </option>
+                  ))}
+                </select>
               </li>
             )
           })}

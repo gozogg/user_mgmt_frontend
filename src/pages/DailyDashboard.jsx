@@ -1,17 +1,26 @@
 import { useEffect, useState } from "react"
-import { getJobDates, updateJobDate } from "../api/jobDates"
+import { deleteJobDate, getJobDates, updateJobDate } from "../api/jobDates"
 import DailyJobDateItem from "../components/DailyJobDateItem"
 
-function today() {
-  const d = new Date()
+function formatDate(value) {
+  if (!value) return ""
+  return String(value).slice(0, 10)
+}
+
+function shiftDateString(dateStr, days) {
+  const d = new Date(`${dateStr}T12:00:00`)
+  d.setDate(d.getDate() + days)
+  return todayFromDate(d)
+}
+
+function todayFromDate(d = new Date()) {
   const month = String(d.getMonth() + 1).padStart(2, "0")
   const day = String(d.getDate()).padStart(2, "0")
   return `${d.getFullYear()}-${month}-${day}`
 }
 
-function formatDate(value) {
-  if (!value) return ""
-  return String(value).slice(0, 10)
+function today() {
+  return todayFromDate(new Date())
 }
 
 export default function DailyDashboard() {
@@ -21,28 +30,69 @@ export default function DailyDashboard() {
   const [savingKey, setSavingKey] = useState(null)
 
   const completedCount = jobDates.filter((row) => row.status === "complete").length
+  const invoicedCount = jobDates.filter((row) => row.status === "invoiced").length
 
-  useEffect(() => {
+  function loadJobDates() {
     setError(null)
     getJobDates({ date })
       .then(setJobDates)
       .catch((err) => setError(err.message))
+  }
+
+  useEffect(() => {
+    loadJobDates()
   }, [date])
 
-  async function handleToggleStatus(row) {
+  async function handleStatusChange(row, status) {
     const rowDate = formatDate(row.date)
     const key = `${row.job_id}-${rowDate}`
-    const nextStatus = row.status === "complete" ? "not_complete" : "complete"
 
     setSavingKey(key)
     setError(null)
     try {
-      await updateJobDate(row.job_id, rowDate, { status: nextStatus })
+      await updateJobDate(row.job_id, rowDate, { status })
       setJobDates((prev) =>
         prev.map((item) =>
           item.job_id === row.job_id && formatDate(item.date) === rowDate
-            ? { ...item, status: nextStatus }
+            ? { ...item, status }
             : item
+        )
+      )
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setSavingKey(null)
+    }
+  }
+
+  async function handleDateChange(row, newDate) {
+    const oldDate = formatDate(row.date)
+    // If moved off the currently viewed day, drop it from this list.
+    if (newDate !== date) {
+      setJobDates((prev) =>
+        prev.filter(
+          (item) =>
+            !(item.job_id === row.job_id && formatDate(item.date) === oldDate)
+        )
+      )
+      return
+    }
+    loadJobDates()
+  }
+
+  async function handleDelete(row) {
+    const rowDate = formatDate(row.date)
+    const key = `${row.job_id}-${rowDate}`
+    if (!window.confirm("Delete this job date?")) return
+
+    setSavingKey(key)
+    setError(null)
+    try {
+      await deleteJobDate(row.job_id, rowDate)
+      setJobDates((prev) =>
+        prev.filter(
+          (item) =>
+            !(item.job_id === row.job_id && formatDate(item.date) === rowDate)
         )
       )
     } catch (err) {
@@ -65,18 +115,45 @@ export default function DailyDashboard() {
             </h1>
             <p className="mt-1 text-sm text-slate-600">
               {jobDates.length} {jobDates.length === 1 ? "job" : "jobs"} ·{" "}
-              {completedCount} complete
+              {completedCount} complete · {invoicedCount} invoiced
             </p>
           </div>
-          <label className="flex flex-col gap-1 text-sm font-medium text-slate-700">
-            Date
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
-            />
-          </label>
+          <div className="flex flex-col gap-1">
+            <span className="text-sm font-medium text-slate-700">Date</span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setDate((prev) => shiftDateString(prev, -1))}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-700 transition hover:bg-slate-100"
+                aria-label="Previous day"
+              >
+                <i className="fa-solid fa-chevron-left text-xs"></i>
+              </button>
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+              />
+              <button
+                type="button"
+                onClick={() => setDate((prev) => shiftDateString(prev, 1))}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-700 transition hover:bg-slate-100"
+                aria-label="Next day"
+              >
+                <i className="fa-solid fa-chevron-right text-xs"></i>
+              </button>
+              {date !== today() && (
+                <button
+                  type="button"
+                  onClick={() => setDate(today())}
+                  className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+                >
+                  Today
+                </button>
+              )}
+            </div>
+          </div>
         </div>
 
         {error && (
@@ -87,7 +164,6 @@ export default function DailyDashboard() {
       </header>
 
       <div className="grid min-h-0 flex-1 lg:grid-cols-2">
-        {/* Job list */}
         <div className="min-h-0 overflow-y-auto border-r border-slate-200 p-6">
           {!jobDates.length ? (
             <div className="rounded-xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center">
@@ -106,7 +182,9 @@ export default function DailyDashboard() {
                     key={key}
                     row={row}
                     isSaving={savingKey === key}
-                    onToggleStatus={handleToggleStatus}
+                    onStatusChange={handleStatusChange}
+                    onDateChange={handleDateChange}
+                    onDelete={handleDelete}
                   />
                 )
               })}
@@ -114,7 +192,6 @@ export default function DailyDashboard() {
           )}
         </div>
 
-        {/* Map placeholder */}
         <div className="hidden min-h-0 bg-slate-100 p-6 lg:block">
           <div className="flex h-full min-h-[24rem] flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white text-center">
             <i className="fa-solid fa-map-location-dot mb-3 text-3xl text-slate-400"></i>
