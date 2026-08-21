@@ -1,6 +1,6 @@
-import { Link, useParams } from "react-router-dom"
+import { Link, useNavigate, useParams } from "react-router-dom"
 import { getJobs } from "../api/jobs"
-import { getClients } from "../api/clients"
+import { deleteClient, getClients } from "../api/clients"
 import { getJobDates } from "../api/jobDates"
 import { useState, useEffect, useMemo } from "react"
 import JobList from "../components/JobList"
@@ -9,6 +9,7 @@ import NewClientForm from "../components/NewClientForm"
 
 export default function ClientDetailPage() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const [jobs, setJobs] = useState([])
   const [jobDates, setJobDates] = useState([])
   const [client, setClient] = useState({})
@@ -50,6 +51,20 @@ export default function ClientDetailPage() {
     loadJobDates()
   }, [id])
 
+  async function handleDelete() {
+    const label = name !== "Client" ? name : "this client"
+    if (!window.confirm(`Delete ${label}? This will also remove their jobs and job dates.`)) {
+      return
+    }
+    setError(null)
+    try {
+      await deleteClient(id)
+      navigate("/clients")
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
   return (
     <section className="flex-1 overflow-y-auto bg-slate-50 min-h-screen p-8">
       <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
@@ -74,6 +89,14 @@ export default function ClientDetailPage() {
           >
             <i className="fa-solid fa-pencil text-xs"></i>
             Edit client
+          </button>
+          <button
+            type="button"
+            onClick={handleDelete}
+            className="inline-flex items-center gap-2 rounded-lg bg-red-700 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-red-600"
+          >
+            <i className="fa-solid fa-trash text-xs"></i>
+            Delete
           </button>
           <button
             type="button"
