@@ -1,6 +1,8 @@
 import { createClient } from "../api/clients"
+import { updateClient } from "../api/clients";
 
-export default function NewClientForm({onCancel, onSuccess}) {
+export default function NewClientForm({onCancel, onSuccess, client}) {
+  const isEdit = Boolean(client?.id)
   // local state for each field (or one form object)
   async function handleSubmit(e) {
     e.preventDefault()
@@ -14,7 +16,11 @@ export default function NewClientForm({onCancel, onSuccess}) {
       address: formData.get("address"),
       city: formData.get("city")
     }
-    await createClient(body)
+    if (isEdit) {
+      await updateClient(client.id, body)
+    } else {
+      await createClient(body)
+    }
     onSuccess()
   }
   return (
@@ -27,6 +33,7 @@ export default function NewClientForm({onCancel, onSuccess}) {
               id="first_name"
               type="text"
               name="first_name"
+              defaultValue={client?.first_name ?? ""}
               required
               className="block w-full rounded-md px-3.5 py-2 border"
             />
@@ -40,6 +47,7 @@ export default function NewClientForm({onCancel, onSuccess}) {
               id="last_name"
               type="text"
               name="last_name"
+              defaultValue={client?.last_name ?? ""}
               required
               className="block w-full rounded-md px-3.5 py-2 border"
             />
@@ -53,6 +61,7 @@ export default function NewClientForm({onCancel, onSuccess}) {
               id="email"
               type="email"
               name="email"
+              defaultValue={client?.email ?? ""}
               required
               className="block w-full rounded-md px-3.5 py-2 border"
             />
@@ -66,6 +75,7 @@ export default function NewClientForm({onCancel, onSuccess}) {
               id="phone_number"
               type="phone"
               name="phone_number"
+              defaultValue={client?.phone_number ?? ""}
               required
               className="block w-full rounded-md px-3.5 py-2 border"
             />
@@ -79,6 +89,7 @@ export default function NewClientForm({onCancel, onSuccess}) {
               id="address"
               type="address"
               name="address"
+              defaultValue={client?.address ?? ""}
               required
               className="block w-full rounded-md px-3.5 py-2 border"
             />
@@ -92,6 +103,7 @@ export default function NewClientForm({onCancel, onSuccess}) {
               id="city"
               type="city"
               name="city"
+              defaultValue={client?.city ?? ""}
               required
               className="block w-full rounded-md px-3.5 py-2 border"
             />

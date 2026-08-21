@@ -1,39 +1,58 @@
 export default function JobOccurrenceBlock({ job }) {
+  const isOnetime = job.frequency === "onetime"
+  const price = job.price != null ? Number(job.price) : null
+
   return (
-    // <Link
-    //   to={`/clients/${client.id}`}
-    //   className="group flex h-full flex-col rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-slate-300 hover:shadow-md"
-    // >
-    <>
-      <div className="mb-4 flex items-center gap-3">
+    <div className="flex h-full flex-col rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="mb-4 flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h2 className="truncate text-lg font-semibold text-slate-900 group-hover:text-slate-700">
-            {job.description}
+          <h2 className="truncate text-lg font-semibold text-slate-900">
+            {job.description || "Untitled job"}
           </h2>
           <p className="text-xs text-slate-500">Job #{job.id}</p>
         </div>
+        {job.frequency && (
+          <span className="shrink-0 rounded-md bg-slate-100 px-2 py-1 text-xs font-medium capitalize text-slate-700">
+            {job.frequency}
+          </span>
+        )}
       </div>
 
       <div className="mt-auto space-y-2 text-sm text-slate-600">
-        {job.frequency == 'onetime' ? (
-          <div className="flex items-start gap-2">
-            <i className="fa-solid fa-location-dot mt-0.5 w-4 text-center text-slate-400"></i>
-            <span>{job.start_date}</span>
-          </div>
+        {isOnetime ? (
+          job.start_date && (
+            <div className="flex items-center gap-2">
+              <i className="fa-solid fa-calendar-day w-4 text-center text-slate-400"></i>
+              <span>{job.start_date}</span>
+            </div>
+          )
         ) : (
-          <div>
+          <>
+            {(job.start_date || job.end_date) && (
+              <div className="flex items-center gap-2">
+                <i className="fa-solid fa-calendar-days w-4 text-center text-slate-400"></i>
+                <span>
+                  {job.start_date}
+                  {job.end_date ? ` – ${job.end_date}` : ""}
+                </span>
+              </div>
+            )}
+            {job.day_of_week && (
+              <div className="flex items-center gap-2">
+                <i className="fa-solid fa-clock w-4 text-center text-slate-400"></i>
+                <span className="capitalize">{job.day_of_week}</span>
+              </div>
+            )}
+          </>
+        )}
+
+        {price != null && !Number.isNaN(price) && (
           <div className="flex items-center gap-2">
-            <i className="fa-solid fa-phone w-4 text-center text-slate-400"></i>
-            <span>{job.start_date} - {job.end_date}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <i className="fa-solid fa-phone w-4 text-center text-slate-400"></i>
-            <span>Day of Week: {job.day_of_week}</span>
-          </div>
+            <i className="fa-solid fa-dollar-sign w-4 text-center text-slate-400"></i>
+            <span>${price.toFixed(2)}</span>
           </div>
         )}
       </div>
-      </>
-    // </Link>
+    </div>
   )
 }

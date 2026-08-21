@@ -1,11 +1,11 @@
 import { request } from "./http"
 
-export function getJobDates({ date, startDate, endDate, clientId } = {}) {
+export function getJobDates({ date, startDate, endDate, client_id } = {}) {
   const params = new URLSearchParams()
   if (date) params.set("date", date)
   if (startDate) params.set("start_date", startDate)
   if (endDate) params.set("end_date", endDate)
-  if (clientId) params.set("client_id", clientId)
+  if (client_id) params.set("client_id", client_id)
   return request(`/job-dates?${params}`)
 }
 
