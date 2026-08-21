@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
-import { getJobDates } from "../api/jobDates"
-import JobList from "../components/JobList"
+import { getJobDates, updateJobDate } from "../api/jobDates"
+import DailyJobDateItem from "../components/DailyJobDateItem"
 
 function today() {
   const d = new Date()
@@ -9,28 +9,122 @@ function today() {
   return `${d.getFullYear()}-${month}-${day}`
 }
 
+function formatDate(value) {
+  if (!value) return ""
+  return String(value).slice(0, 10)
+}
+
 export default function DailyDashboard() {
   const [date, setDate] = useState(today)
-  const [jobs, setJobs] = useState([])
+  const [jobDates, setJobDates] = useState([])
   const [error, setError] = useState(null)
+  const [savingKey, setSavingKey] = useState(null)
+
+  const completedCount = jobDates.filter((row) => row.status === "complete").length
 
   useEffect(() => {
     setError(null)
     getJobDates({ date })
-      .then(setJobs)
+      .then(setJobDates)
       .catch((err) => setError(err.message))
   }, [date])
 
+  async function handleToggleStatus(row) {
+    const rowDate = formatDate(row.date)
+    const key = `${row.job_id}-${rowDate}`
+    const nextStatus = row.status === "complete" ? "not_complete" : "complete"
+
+    setSavingKey(key)
+    setError(null)
+    try {
+      await updateJobDate(row.job_id, rowDate, { status: nextStatus })
+      setJobDates((prev) =>
+        prev.map((item) =>
+          item.job_id === row.job_id && formatDate(item.date) === rowDate
+            ? { ...item, status: nextStatus }
+            : item
+        )
+      )
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setSavingKey(null)
+    }
+  }
+
   return (
-    <section>
-      <h1>Daily dashboard</h1>
-      <input
-        type="date"
-        value={date}
-        onChange={(e) => setDate(e.target.value)}
-      />
-      {error && <p>{error}</p>}
-      <JobList jobs={jobs} />
+    <section className="flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-slate-50">
+      <header className="shrink-0 border-b border-slate-200 bg-white px-6 py-4">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="text-sm font-medium uppercase tracking-wide text-slate-500">
+              Daily
+            </p>
+            <h1 className="mt-1 text-2xl font-semibold text-slate-900">
+              Daily dashboard
+            </h1>
+            <p className="mt-1 text-sm text-slate-600">
+              {jobDates.length} {jobDates.length === 1 ? "job" : "jobs"} ·{" "}
+              {completedCount} complete
+            </p>
+          </div>
+          <label className="flex flex-col gap-1 text-sm font-medium text-slate-700">
+            Date
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+            />
+          </label>
+        </div>
+
+        {error && (
+          <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </p>
+        )}
+      </header>
+
+      <div className="grid min-h-0 flex-1 lg:grid-cols-2">
+        {/* Job list */}
+        <div className="min-h-0 overflow-y-auto border-r border-slate-200 p-6">
+          {!jobDates.length ? (
+            <div className="rounded-xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center">
+              <i className="fa-solid fa-calendar-day mb-3 text-2xl text-slate-400"></i>
+              <p className="text-slate-600">No jobs scheduled</p>
+              <p className="mt-1 text-sm text-slate-500">
+                Pick another date or add jobs for this day.
+              </p>
+            </div>
+          ) : (
+            <ul className="space-y-3">
+              {jobDates.map((row) => {
+                const key = `${row.job_id}-${formatDate(row.date)}`
+                return (
+                  <DailyJobDateItem
+                    key={key}
+                    row={row}
+                    isSaving={savingKey === key}
+                    onToggleStatus={handleToggleStatus}
+                  />
+                )
+              })}
+            </ul>
+          )}
+        </div>
+
+        {/* Map placeholder */}
+        <div className="hidden min-h-0 bg-slate-100 p-6 lg:block">
+          <div className="flex h-full min-h-[24rem] flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white text-center">
+            <i className="fa-solid fa-map-location-dot mb-3 text-3xl text-slate-400"></i>
+            <p className="font-medium text-slate-700">Map placeholder</p>
+            <p className="mt-1 max-w-xs text-sm text-slate-500">
+              Job locations for this day will appear here once Mapbox is wired up.
+            </p>
+          </div>
+        </div>
+      </div>
     </section>
   )
 }

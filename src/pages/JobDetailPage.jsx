@@ -1,5 +1,5 @@
 import { Link, useNavigate, useParams, useLocation } from "react-router-dom"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { deleteJob, getJobs } from "../api/jobs"
 import { getJobDates, updateJobDate } from "../api/jobDates"
 import NewJobForm from "../components/NewJobForm"
@@ -19,6 +19,11 @@ export default function JobDetailPage() {
   const [savingDate, setSavingDate] = useState(null)
   const location = useLocation()
   const backTo = location.state?.from ?? "/jobs"
+
+  const totalProfit = useMemo(() => {
+    const sum = jobDates.reduce((total, row) => total + Number(row.price || 0), 0)
+    return sum.toLocaleString("en-US", { style: "currency", currency: "USD" })
+  }, [jobDates])
 
   function loadJob() {
     setError(null)
@@ -90,7 +95,7 @@ export default function JobDetailPage() {
           <p className="mt-1 text-slate-600">
             {job?.first_name} {job?.last_name}
             {job?.frequency ? ` · ${job.frequency}` : ""}
-            {` · ${price}`}
+            {` · ${totalProfit}`}
           </p>
         </div>
 
