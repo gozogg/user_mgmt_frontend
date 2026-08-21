@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { deleteJobDate, getJobDates, updateJobDate } from "../api/jobDates"
 import DailyJobDateItem from "../components/DailyJobDateItem"
+import WeeklyJobDateItem from "../components/WeeklyJobDateItem"
 
 function toDateString(d) {
   const month = String(d.getMonth() + 1).padStart(2, "0")
@@ -217,7 +218,7 @@ export default function WeeklyDashboard() {
                       {rows.map((row) => {
                         const key = `${row.job_id}-${formatDate(row.date)}`
                         return (
-                          <DailyJobDateItem
+                          <WeeklyJobDateItem
                             key={key}
                             row={row}
                             compact

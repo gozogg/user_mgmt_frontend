@@ -39,3 +39,9 @@ export function jobDateStatusIcon(status) {
     }[status] || "fa-circle text-slate-300"
   )
 }
+
+export function nextJobDateStatus(status) {
+  const current = JOB_DATE_STATUSES.indexOf(status)
+  const index = current === -1 ? 0 : (current + 1) % JOB_DATE_STATUSES.length
+  return JOB_DATE_STATUSES[index]
+}
