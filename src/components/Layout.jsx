@@ -5,6 +5,7 @@ const navItems = [
   { to: "/week", label: "Weekly", icon: "fa-calendar-days" },
   { to: "/clients", label: "Clients", icon: "fa-users" },
   { to: "/jobs", label: "Jobs", icon: "fa-briefcase" },
+  { to: "/map", label: "Map", icon: "fa-map" },
 ]
 
 function linkClass({ isActive }) {

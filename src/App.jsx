@@ -7,6 +7,7 @@ import ClientDetailPage from "./pages/ClientDetailPage"
 import JobsPage from "./pages/JobsPage"
 import JobDetailPage from "./pages/JobDetailPage"
 import HomePage from "./pages/HomePage"
+import MapPage from "./pages/MapPage"
 import "@fortawesome/fontawesome-free/css/all.min.css"
 
 export default function App() {
@@ -21,6 +22,7 @@ export default function App() {
           <Route path="/clients/:id" element={<ClientDetailPage />} />
           <Route path="/jobs" element={<JobsPage />} />
           <Route path="/jobs/:id" element={<JobDetailPage />} />
+          <Route path="/map" element={<MapPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
