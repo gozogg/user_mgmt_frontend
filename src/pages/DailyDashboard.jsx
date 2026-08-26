@@ -29,9 +29,15 @@ export default function DailyDashboard() {
   const [jobDates, setJobDates] = useState([])
   const [error, setError] = useState(null)
   const [savingKey, setSavingKey] = useState(null)
+  const [searchTerm, setSearchTerm] = useState("")
 
   const completedCount = jobDates.filter((row) => row.status === "complete").length
   const invoicedCount = jobDates.filter((row) => row.status === "invoiced").length
+
+  const filteredJobs = jobDates.filter((job) =>
+    job.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    job.last_name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   function loadJobDates() {
     setError(null)
@@ -119,6 +125,28 @@ export default function DailyDashboard() {
               {completedCount} complete · {invoicedCount} invoiced
             </p>
           </div>
+          <div className="flex flex-wrap items-end gap-2">
+            <label className="relative block w-full min-w-[14rem] sm:w-64">
+              <span className="sr-only">Search client names</span>
+              <i className="fa-solid fa-magnifying-glass pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-400"></i>
+              <input
+                type="text"
+                placeholder="Search clients…"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-9 pr-9 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+              />
+              {searchTerm && (
+                <button
+                  type="button"
+                  onClick={() => setSearchTerm("")}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+                >
+                  <i className="fa-solid fa-xmark text-xs"></i>
+                </button>
+              )}
+            </label>
+          
           <div className="flex flex-col gap-1">
             <span className="text-sm font-medium text-slate-700">Date</span>
             <div className="flex items-center gap-2">
@@ -154,6 +182,7 @@ export default function DailyDashboard() {
                 </button>
               )}
             </div>
+          </div>
           </div>
         </div>
 

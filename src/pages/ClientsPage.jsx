@@ -41,7 +41,7 @@ export default function ClientsPage() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <label className="relative block w-full min-w-[14rem] sm:w-64">
-            <span className="sr-only">Search clients</span>
+            <span className="sr-only">Search client names</span>
             <i className="fa-solid fa-magnifying-glass pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-400"></i>
             <input
               type="text"

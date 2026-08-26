@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom"
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import {
   JOB_DATE_STATUSES,
   jobDateCardClass,
   jobDateStatusLabel,
+  jobDateStatusIcon,
 } from "../utils/jobDateStatus"
 import JobDateForm from "./JobDateForm"
 
@@ -18,6 +19,22 @@ export default function DailyJobDateItem({
 }) {
   const [formOpened, setFormOpened] = useState(false)
   const clientName = [row.first_name, row.last_name].filter(Boolean).join(" ")
+  const [statusMenuOpen, setStatusMenuOpen] = useState(false)
+  const statusMenuRef = useRef(null)
+  const status = row.status || "not_complete"
+
+  useEffect(() => {
+    if (!statusMenuOpen) return
+
+    function handleClickOutside(event) {
+      if (statusMenuRef.current && !statusMenuRef.current.contains(event.target)) {
+        setStatusMenuOpen(false)
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [statusMenuOpen])
 
   return (
     <li
@@ -45,6 +62,39 @@ export default function DailyJobDateItem({
         </div>
       
         <div className="flex shrink-0 gap-1">
+          <div className="relative" ref={statusMenuRef}>
+            <button
+              type="button"
+              title={`Status: ${jobDateStatusLabel(status)}`}
+              disabled={isSaving}
+              onClick={() => setStatusMenuOpen((open) => !open)}
+              className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-300 text-slate-600 transition hover:bg-slate-100 disabled:opacity-60"
+            >
+              <i className={`fa-solid text-xs ${jobDateStatusIcon(status)}`}></i>
+            </button>
+
+            {statusMenuOpen && (
+              <div className="absolute left-0 z-20 mt-1 flex gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-lg">
+                {JOB_DATE_STATUSES.map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    title={jobDateStatusLabel(option)}
+                    disabled={isSaving}
+                    onClick={() => {
+                      setStatusMenuOpen(false)
+                      if (option !== status) onStatusChange?.(row, option)
+                    }}
+                    className={`inline-flex h-8 w-8 items-center justify-center rounded-md transition hover:bg-slate-100 disabled:opacity-60 ${
+                      option === status ? "bg-slate-100 ring-1 ring-slate-300" : ""
+                    }`}
+                  >
+                    <i className={`fa-solid text-xs ${jobDateStatusIcon(option)}`}></i>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <button
             type="button"
             title="Edit date"
@@ -66,8 +116,8 @@ export default function DailyJobDateItem({
         
       </div>
 
-      <div className="flex items-start justify-between gap-3">
-      <div className="mt-3 space-y-1.5 text-sm text-slate-600">
+      {/* <div className="flex items-start justify-between gap-3"> */}
+      {/* <div className="mt-3 space-y-1.5 text-sm text-slate-600">
         {row.address && (
           <div className="flex items-start gap-2">
             <i className="fa-solid fa-location-dot mt-0.5 w-4 text-center text-slate-400"></i>
@@ -77,9 +127,9 @@ export default function DailyJobDateItem({
             </span>
           </div>
         )}
-      </div>
+      </div> */}
 
-      <div className="mt-3">
+      {/* <div className="mt-3">
         <label className="block text-xs font-medium text-slate-500">
           <select
             value={row.status || "not_complete"}
@@ -94,8 +144,8 @@ export default function DailyJobDateItem({
             ))}
           </select>
         </label>
-      </div>
-      </div>
+      </div> */}
+      {/* </div> */}
 
       {formOpened && (
         <div
