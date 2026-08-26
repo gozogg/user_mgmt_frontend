@@ -7,6 +7,12 @@ export default function ClientsPage() {
   const [clients, setClients] = useState([])
   const [formOpened, setFormOpened] = useState(false)
   const [error, setError] = useState(null)
+  const [searchTerm, setSearchTerm] = useState("")
+
+  const filteredClients = clients.filter((client) =>
+    client.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    client.last_name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   function loadClients() {
     setError(null)
@@ -33,14 +39,36 @@ export default function ClientsPage() {
             {clients.length} {clients.length === 1 ? "client" : "clients"} total
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => setFormOpened(true)}
-          className="inline-flex items-center gap-2 rounded-lg bg-slate-800 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-slate-700"
-        >
-          <i className="fa-solid fa-plus text-xs"></i>
-          Add client
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <label className="relative block w-full min-w-[14rem] sm:w-64">
+            <span className="sr-only">Search clients</span>
+            <i className="fa-solid fa-magnifying-glass pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-400"></i>
+            <input
+              type="text"
+              placeholder="Search clients…"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-9 pr-9 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => setSearchTerm("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+              >
+                <i className="fa-solid fa-xmark text-xs"></i>
+              </button>
+            )}
+          </label>
+          <button
+            type="button"
+            onClick={() => setFormOpened(true)}
+            className="inline-flex items-center gap-2 rounded-lg bg-slate-800 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-slate-700"
+          >
+            <i className="fa-solid fa-plus text-xs"></i>
+            Add client
+          </button>
+        </div>
       </header>
 
       {error && (
@@ -49,7 +77,7 @@ export default function ClientsPage() {
         </p>
       )}
 
-      <ClientList clients={clients} />
+      <ClientList clients={filteredClients} />
 
       {formOpened && (
       <div

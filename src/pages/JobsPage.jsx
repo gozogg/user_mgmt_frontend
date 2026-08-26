@@ -14,11 +14,18 @@ export default function JobsPage() {
   const [error, setError] = useState(null)
   const [start_date, setStartDate] = useState("2026-01-01")
   const [end_date, setEndDate] = useState("2026-12-31")
+  const [searchTerm, setSearchTerm] = useState("")
   
   const totalProfit = useMemo(() => {
     const sum = jobDates.reduce((total, row) => total + Number(row.price || 0), 0)
     return sum.toLocaleString("en-US", { style: "currency", currency: "USD" })
   }, [jobDates])
+
+  const filteredJobs = jobs.filter((job) =>
+    job.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    job.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    job.description.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   function loadJobs() {
     setError(null)
@@ -52,8 +59,30 @@ export default function JobsPage() {
             {jobs.length} {jobs.length === 1 ? "job" : "jobs"} total
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <p className="mt-1 text-slate-600">{totalProfit} total profit</p>
+        <div className="flex flex-wrap items-center gap-2">
+        <label className="relative block w-full min-w-[14rem] sm:w-64">
+            <span className="sr-only">Search jobs</span>
+            <i className="fa-solid fa-magnifying-glass pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-400"></i>
+            <input
+              type="text"
+              placeholder="Search jobs..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-9 pr-9 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => setSearchTerm("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+              >
+                <i className="fa-solid fa-xmark text-xs"></i>
+              </button>
+            )}
+          </label>
+          <div className="flex flex-wrap gap-2">
+            <p className="mt-1 text-slate-600">{totalProfit} total profit</p>
+          </div>
         </div>
       </header>
 
@@ -63,7 +92,7 @@ export default function JobsPage() {
         </p>
       )}
 
-      <JobList jobs={jobs} />
+      <JobList jobs={filteredJobs} />
 
       {formOpened && (
       <div

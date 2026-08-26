@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react"
 import mapboxgl from "mapbox-gl"
 import "mapbox-gl/dist/mapbox-gl.css"
+import { jobDayColor } from "../utils/jobDay"
 
 export default function DailyMap({ center, zoom, jobs = [] }) {
   const containerRef = useRef(null)
@@ -54,7 +55,9 @@ export default function DailyMap({ center, zoom, jobs = [] }) {
       const lat = Number(job.latitude)
       if (Number.isNaN(lng) || Number.isNaN(lat)) return
 
-      const marker = new mapboxgl.Marker({ color: "#FF0000", scale: 0.8 })
+      const color = jobDayColor(job.day_of_week)
+
+      const marker = new mapboxgl.Marker({ color , scale: 0.8 })
         .setLngLat([lng, lat])
         .setPopup(
           new mapboxgl.Popup({ offset: 16 }).setText(
