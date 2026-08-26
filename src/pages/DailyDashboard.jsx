@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { deleteJobDate, getJobDates, updateJobDate } from "../api/jobDates"
 import DailyJobDateItem from "../components/DailyJobDateItem"
+import DailyMap from "../components/DailyMap"
 
 function formatDate(value) {
   if (!value) return ""
@@ -193,13 +194,11 @@ export default function DailyDashboard() {
         </div>
 
         <div className="hidden min-h-0 bg-slate-100 p-6 lg:block">
-          <div className="flex h-full min-h-[24rem] flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white text-center">
-            <i className="fa-solid fa-map-location-dot mb-3 text-3xl text-slate-400"></i>
-            <p className="font-medium text-slate-700">Map placeholder</p>
-            <p className="mt-1 max-w-xs text-sm text-slate-500">
-              Job locations for this day will appear here once Mapbox is wired up.
-            </p>
-          </div>
+          <DailyMap
+            jobs={jobDates}
+            center={[-83.35697, 42.43716]}
+            zoom={9}
+          />
         </div>
       </div>
     </section>

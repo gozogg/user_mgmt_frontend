@@ -6,6 +6,7 @@ import { useState, useEffect, useMemo } from "react"
 import JobList from "../components/JobList"
 import NewJobForm from "../components/NewJobForm"
 import NewClientForm from "../components/NewClientForm"
+import ClientMap from "../components/ClientMap"
 
 export default function ClientDetailPage() {
   const { id } = useParams()
@@ -115,8 +116,8 @@ export default function ClientDetailPage() {
         </p>
       )}
 
-      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:col-span-2">
+      <div className="mb-8 grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
+        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:col-span-1">
           <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Contact</p>
           <div className="mt-3 space-y-2 text-sm text-slate-700">
             {(client.address || client.city) && (
@@ -142,14 +143,12 @@ export default function ClientDetailPage() {
           </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-          <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Jobs</p>
-          <p className="mt-3 text-2xl font-semibold text-slate-900">{jobs.length}</p>
-        </div>
-
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-          <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Total profit</p>
-          <p className="mt-3 text-2xl font-semibold text-slate-900">{totalProfit}</p>
+        <div className="min-h-[12rem] overflow-hidden rounded-xl border border-slate-200 bg-slate-100 lg:min-h-0">
+          <ClientMap
+            client={client}
+            center={[-83.35697, 42.43716]}
+            zoom={12}
+          />
         </div>
       </div>
 
