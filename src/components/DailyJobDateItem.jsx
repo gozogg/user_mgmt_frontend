@@ -44,6 +44,11 @@ export default function DailyJobDateItem({
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
+          {row.stop_order != null && (
+            <span className="mb-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-slate-200 text-[10px] font-semibold text-slate-700">
+              {row.stop_order}
+            </span>
+          )}
           <Link
             to={`/jobs/${row.job_id}`}
             state={{ from }}

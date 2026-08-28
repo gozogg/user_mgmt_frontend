@@ -3,6 +3,7 @@ import { NavLink, Outlet } from "react-router-dom"
 const navItems = [
   { to: "/day", label: "Daily", icon: "fa-calendar-day" },
   { to: "/week", label: "Weekly", icon: "fa-calendar-days" },
+  { to: "/schedule", label: "Schedule", icon: "fa-route" },
   { to: "/clients", label: "Clients", icon: "fa-users" },
   { to: "/jobs", label: "Jobs", icon: "fa-briefcase" },
   { to: "/map", label: "Map", icon: "fa-map" },

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { deleteJobDate, getJobDates, updateJobDate } from "../api/jobDates"
 import DailyJobDateItem from "../components/DailyJobDateItem"
 import DailyMap from "../components/DailyMap"
@@ -34,7 +34,18 @@ export default function DailyDashboard() {
   const completedCount = jobDates.filter((row) => row.status === "complete").length
   const invoicedCount = jobDates.filter((row) => row.status === "invoiced").length
 
-  const filteredJobs = jobDates.filter((job) =>
+  const sortedJobs = useMemo(() => {
+    return [...jobDates].sort((a, b) => {
+      const ao = a.stop_order ?? Number.MAX_SAFE_INTEGER
+      const bo = b.stop_order ?? Number.MAX_SAFE_INTEGER
+      if (ao !== bo) return ao - bo
+      const aName = `${a.last_name || ""}${a.first_name || ""}`
+      const bName = `${b.last_name || ""}${b.first_name || ""}`
+      return aName.localeCompare(bName)
+    })
+  }, [jobDates])
+
+  const filteredJobs = sortedJobs.filter((job) =>
     job.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     job.last_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -205,7 +216,7 @@ export default function DailyDashboard() {
             </div>
           ) : (
             <ul className="space-y-3">
-              {jobDates.map((row) => {
+              {filteredJobs.map((row) => {
                 const key = `${row.job_id}-${formatDate(row.date)}`
                 return (
                   <DailyJobDateItem
@@ -224,7 +235,7 @@ export default function DailyDashboard() {
 
         <div className="hidden min-h-0 bg-slate-100 p-6 lg:block">
           <DailyMap
-            jobs={jobDates}
+            jobs={filteredJobs.length ? filteredJobs : sortedJobs}
             center={[-83.35697, 42.43716]}
             zoom={9}
           />

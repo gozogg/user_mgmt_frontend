@@ -3,6 +3,26 @@ import mapboxgl from "mapbox-gl"
 import "mapbox-gl/dist/mapbox-gl.css"
 import { jobDayColor } from "../utils/jobDay"
 
+function markerTextColor(hex) {
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+  return luminance > 0.62 ? "#0f172a" : "#ffffff"
+}
+
+function createStopMarker(stopLabel, color) {
+  const el = document.createElement("div")
+  el.className = "daily-map-marker"
+  el.innerHTML = `
+    <div class="daily-map-marker__body" style="--marker-color: ${color}; --marker-text: ${markerTextColor(color)};">
+      <span class="daily-map-marker__number">${stopLabel}</span>
+    </div>
+    <span class="daily-map-marker__point" style="--marker-color: ${color};"></span>
+  `
+  return el
+}
+
 export default function DailyMap({ center, zoom, jobs = [] }) {
   const containerRef = useRef(null)
   const mapRef = useRef(null)
@@ -50,18 +70,20 @@ export default function DailyMap({ center, zoom, jobs = [] }) {
     const bounds = new mapboxgl.LngLatBounds()
     let hasPoint = false
 
-    jobs.forEach((job) => {
+    jobs.forEach((job, index) => {
       const lng = Number(job.longitude)
       const lat = Number(job.latitude)
       if (Number.isNaN(lng) || Number.isNaN(lat)) return
 
       const color = jobDayColor(job.day_of_week)
+      const stopLabel = job.stop_order ?? index + 1
+      const el = createStopMarker(stopLabel, color)
 
-      const marker = new mapboxgl.Marker({ color , scale: 0.8 })
+      const marker = new mapboxgl.Marker({ element: el, anchor: "bottom" })
         .setLngLat([lng, lat])
         .setPopup(
           new mapboxgl.Popup({ offset: 16 }).setText(
-             `${job.first_name} ${job.last_name}`
+             `#${stopLabel} ${job.first_name} ${job.last_name}`
           )
         )
         .addTo(map)
