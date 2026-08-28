@@ -7,6 +7,7 @@ import JobList from "../components/JobList"
 import NewJobForm from "../components/NewJobForm"
 import NewClientForm from "../components/NewClientForm"
 import ClientMap from "../components/ClientMap"
+import PlantLoader from "../components/PlantLoader"
 
 export default function ClientDetailPage() {
   const { id } = useParams()
@@ -17,6 +18,7 @@ export default function ClientDetailPage() {
   const [jobFormOpened, setJobFormOpened] = useState(false)
   const [clientFormOpened, setClientFormOpened] = useState(false)
   const [error, setError] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   const totalProfit = useMemo(() => {
     const sum = jobDates.reduce((total, row) => total + Number(row.price || 0), 0)
@@ -25,31 +27,20 @@ export default function ClientDetailPage() {
 
   const name = [client.first_name, client.last_name].filter(Boolean).join(" ") || "Client"
 
-  function loadJobs() {
+  function loadAll() {
+    setIsLoading(true)
     setError(null)
-    getJobs({ client_id: id })
-      .then(setJobs)
+    Promise.all([
+      getClients({ client_id: id }).then((data) => setClient(data[0] ?? {})),
+      getJobs({ client_id: id }).then(setJobs),
+      getJobDates({ client_id: id }).then(setJobDates),
+    ])
       .catch((err) => setError(err.message))
-  }
-
-  function loadClient() {
-    setError(null)
-    getClients({ client_id: id })
-      .then((data) => setClient(data[0] ?? {}))
-      .catch((err) => setError(err.message))
-  }
-
-  function loadJobDates() {
-    setError(null)
-    getJobDates({ client_id: id })
-      .then(setJobDates)
-      .catch((err) => setError(err.message))
+      .finally(() => setIsLoading(false))
   }
 
   useEffect(() => {
-    loadClient()
-    loadJobs()
-    loadJobDates()
+    loadAll()
   }, [id])
 
   async function handleDelete() {
@@ -64,6 +55,14 @@ export default function ClientDetailPage() {
     } catch (err) {
       setError(err.message)
     }
+  }
+
+  if (isLoading) {
+    return (
+      <section className="flex min-h-screen flex-1 items-center justify-center bg-slate-50">
+        <PlantLoader message="Loading client…" />
+      </section>
+    )
   }
 
   return (
@@ -173,8 +172,7 @@ export default function ClientDetailPage() {
               onCancel={() => setJobFormOpened(false)}
               onSuccess={() => {
                 setJobFormOpened(false)
-                loadJobs()
-                loadJobDates()
+                loadAll()
               }}
             />
           </div>
@@ -196,7 +194,7 @@ export default function ClientDetailPage() {
               onCancel={() => setClientFormOpened(false)}
               onSuccess={() => {
                 setClientFormOpened(false)
-                loadClient()
+                loadAll()
               }}
             />
           </div>

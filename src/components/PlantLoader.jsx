@@ -1,0 +1,56 @@
+import { useEffect, useState } from "react"
+import { Lottie } from "lottie-react"
+
+let cachedAnimation = null
+
+function usePlantAnimation() {
+  const [animationData, setAnimationData] = useState(cachedAnimation)
+
+  useEffect(() => {
+    if (cachedAnimation) return
+
+    fetch("/plant.json")
+      .then((res) => res.json())
+      .then((data) => {
+        cachedAnimation = data
+        setAnimationData(data)
+      })
+      .catch((err) => console.error("Failed to load plant animation:", err))
+  }, [])
+
+  return animationData
+}
+
+export default function PlantLoader({
+  message = "Loading…",
+  size = 160,
+  className = "",
+}) {
+  const animationData = usePlantAnimation()
+
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+      className={`flex flex-col items-center justify-center gap-1 ${className}`}
+    >
+      {animationData ? (
+        <Lottie
+          src={animationData}
+          autoplay
+          loop
+          style={{ width: size, height: size }}
+        />
+      ) : (
+        <div
+          className="animate-pulse rounded-full bg-slate-200"
+          style={{ width: size, height: size }}
+        />
+      )}
+      {message && (
+        <p className="text-sm font-medium text-slate-500">{message}</p>
+      )}
+    </div>
+  )
+}

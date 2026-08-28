@@ -2,12 +2,14 @@ import ClientList from "../components/ClientList"
 import NewClientForm from "../components/NewClientForm"
 import { getClients } from "../api/clients"
 import { useState, useEffect } from "react"
+import Loader from "../components/Loader"
 
 export default function ClientsPage() {
   const [clients, setClients] = useState([])
   const [formOpened, setFormOpened] = useState(false)
   const [error, setError] = useState(null)
   const [searchTerm, setSearchTerm] = useState("")
+  const [isLoading, setIsLoading] = useState(true)
 
   const filteredClients = clients.filter((client) =>
     client.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -15,15 +17,25 @@ export default function ClientsPage() {
   );
 
   function loadClients() {
+    setIsLoading(true)
     setError(null)
     getClients()
       .then(setClients)
       .catch((err) => setError(err.message))
+      .finally(() => setIsLoading(false))
   }
 
   useEffect(() => {
     loadClients()
   }, [])
+
+  if (isLoading) {
+    return (
+      <section className="flex min-h-screen flex-1 items-center justify-center bg-slate-50">
+        <Loader message="Loading clients…" />
+      </section>
+    )
+  }
 
   return (
     <section className="flex-1 overflow-y-auto bg-slate-50 min-h-screen p-8">
