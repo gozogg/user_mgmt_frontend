@@ -1,5 +1,6 @@
 import { createJob, updateJob } from "../api/jobs"
 import { useState } from "react"
+import { Link } from "react-router-dom"
 
 const fieldClass =
   "mt-1.5 block w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
@@ -8,6 +9,7 @@ const labelClass = "block text-sm font-medium text-slate-700"
 export default function NewJobForm({ onCancel, onSuccess, client_id, job }) {
   const isEdit = Boolean(job?.id)
   const [frequency, setFrequency] = useState(job?.frequency || "onetime")
+  const [day_of_week, setDayOfWeek] = useState(job?.day_of_week || "")
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -139,10 +141,11 @@ export default function NewJobForm({ onCancel, onSuccess, client_id, job }) {
               <select
                 id="day_of_week"
                 name="day_of_week"
-                defaultValue={job?.day_of_week ?? "monday"}
-                required
+                defaultValue={job?.day_of_week ?? ""}
                 className={fieldClass}
+                onChange={(e) => setDayOfWeek(e.target.value)}
               >
+                <option value="">Generate through Scheduler</option>
                 <option value="monday">Monday</option>
                 <option value="tuesday">Tuesday</option>
                 <option value="wednesday">Wednesday</option>
@@ -152,6 +155,23 @@ export default function NewJobForm({ onCancel, onSuccess, client_id, job }) {
                 <option value="sunday">Sunday</option>
               </select>
             </div>
+
+            {!day_of_week && (
+              <div className="sm:col-span-2">
+                <div
+                  role="note"
+                  className="flex gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950"
+                >
+                  <i
+                    className="fa-solid fa-circle-info mt-0.5 shrink-0 text-amber-600"
+                    aria-hidden="true"
+                  ></i>
+                  <p className="leading-relaxed">
+                    No day selected. You will have to run the optimizer in the Schedule tab to view the dates
+                  </p>
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>
