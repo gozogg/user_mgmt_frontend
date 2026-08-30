@@ -8,6 +8,7 @@ import NewJobForm from "../components/NewJobForm"
 import NewClientForm from "../components/NewClientForm"
 import ClientMap from "../components/ClientMap"
 import PlantLoader from "../components/PlantLoader"
+import Loader from "../components/Loader"
 
 export default function ClientDetailPage() {
   const { id } = useParams()
@@ -60,7 +61,7 @@ export default function ClientDetailPage() {
   if (isLoading) {
     return (
       <section className="flex min-h-screen flex-1 items-center justify-center bg-slate-50">
-        <PlantLoader message="Loading client…" />
+        <Loader message="Loading client…" />
       </section>
     )
   }

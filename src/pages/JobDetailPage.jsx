@@ -9,6 +9,8 @@ import {
   jobDateStatusIcon,
   jobDateStatusLabel,
 } from "../utils/jobDateStatus"
+import Loader from "../components/Loader"
+import { LottieLoading } from "lottie-react"
 
 function formatDate(value) {
   if (!value) return ""
@@ -25,6 +27,7 @@ export default function JobDetailPage() {
   const [savingDate, setSavingDate] = useState(null)
   const location = useLocation()
   const backTo = location.state?.from ?? "/jobs"
+  const [isLoading, setIsLoading] = useState(true)
 
   const totalProfit = useMemo(() => {
     const sum = jobDates.reduce((total, row) => total + Number(row.price || 0), 0)
@@ -34,23 +37,19 @@ export default function JobDetailPage() {
   const completedCount = jobDates.filter((row) => row.status === "complete").length
   const invoicedCount = jobDates.filter((row) => row.status === "invoiced").length
 
-  function loadJob() {
+  function loadAll() {
+    setIsLoading(true)
     setError(null)
-    getJobs({ job_id: id })
-      .then((data) => setJob(data[0] ?? null))
-      .catch((err) => setError(err.message))
-  }
-
-  function loadJobDates() {
-    setError(null)
-    getJobDates({ job_id: id })
-      .then(setJobDates)
-      .catch((err) => setError(err.message))
-  }
+    Promise.all([
+      getJobs({ job_id: id }).then((data) => setJob(data[0] ?? null)),
+      getJobDates({ job_id: id }).then(setJobDates),
+    ])
+    .catch((err) => setError(err.message))
+    .finally(() => setIsLoading(false))
+}
 
   useEffect(() => {
-    loadJob()
-    loadJobDates()
+    loadAll()
   }, [id])
 
   async function handleStatusChange(row, status) {
@@ -86,6 +85,14 @@ export default function JobDetailPage() {
     job?.price != null && !Number.isNaN(Number(job.price))
       ? Number(job.price).toLocaleString("en-US", { style: "currency", currency: "USD" })
       : "—"
+
+  if (isLoading) {
+    return (
+      <section className="flex min-h-screen flex-1 items-center justify-center bg-slate-50">
+        <Loader message="Loading job…" />
+      </section>
+    )
+  }
 
   return (
     <section className="flex-1 overflow-y-auto bg-slate-50 min-h-screen p-8">

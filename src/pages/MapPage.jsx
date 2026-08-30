@@ -6,6 +6,7 @@ import {
   jobDateStatusLabel,
   jobDayColor,
 } from "../utils/jobDay"
+import Loader from "../components/Loader"
 
 const FREQUENCIES = [
   { value: "onetime", label: "One time" },
@@ -35,7 +36,7 @@ export default function MapPage() {
   const [error, setError] = useState(null)
   const [frequencies, setFrequencies] = useState([])
   const [daysOfWeek, setDaysOfWeek] = useState([])
-
+  const [isLoading, setIsLoading] = useState(true)  
   const showDayFilter =
     frequencies.length === 0 || frequencies.some((f) => f !== "onetime")
   const hasFilters = frequencies.length > 0 || daysOfWeek.length > 0
@@ -45,11 +46,20 @@ export default function MapPage() {
     getJobs({ frequency: frequencies, day_of_week: daysOfWeek })
       .then(setJobs)
       .catch((err) => setError(err.message))
+      .finally(() => setIsLoading(false))
   }, [frequencies, daysOfWeek])
 
   function clearFilters() {
     setFrequencies([])
     setDaysOfWeek([])
+  }
+
+  if (isLoading) {
+    return (
+      <section className="flex min-h-screen flex-1 items-center justify-center bg-slate-50">
+        <Loader message="Loading map…" />
+      </section>
+    )
   }
 
   return (

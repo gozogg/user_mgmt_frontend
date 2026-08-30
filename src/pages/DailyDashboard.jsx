@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react"
 import { deleteJobDate, getJobDates, updateJobDate } from "../api/jobDates"
 import DailyJobDateItem from "../components/DailyJobDateItem"
 import DailyMap from "../components/DailyMap"
+import Loader from "../components/Loader"
 
 function formatDate(value) {
   if (!value) return ""
@@ -30,6 +31,7 @@ export default function DailyDashboard() {
   const [error, setError] = useState(null)
   const [savingKey, setSavingKey] = useState(null)
   const [searchTerm, setSearchTerm] = useState("")
+  const [isLoading, setIsLoading] = useState(true)
 
   const completedCount = jobDates.filter((row) => row.status === "complete").length
   const invoicedCount = jobDates.filter((row) => row.status === "invoiced").length
@@ -55,6 +57,7 @@ export default function DailyDashboard() {
     getJobDates({ date })
       .then(setJobDates)
       .catch((err) => setError(err.message))
+      .finally(() => setIsLoading(false))
   }
 
   useEffect(() => {
@@ -118,6 +121,13 @@ export default function DailyDashboard() {
     } finally {
       setSavingKey(null)
     }
+  }
+  if (isLoading) {
+    return (
+      <section className="flex min-h-screen flex-1 items-center justify-center bg-slate-50">
+        <Loader message="Loading day…" />
+      </section>
+    )
   }
 
   return (

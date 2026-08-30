@@ -5,7 +5,7 @@ import NewClientForm from "../components/NewClientForm"
 import { getJobs } from "../api/jobs"
 import { useState, useEffect, useMemo } from "react"
 import { getJobDates } from "../api/jobDates"
-
+import Loader from "../components/Loader"
 
 export default function JobsPage() {
   const [jobs, setJobs] = useState([])
@@ -15,6 +15,7 @@ export default function JobsPage() {
   const [start_date, setStartDate] = useState("2026-01-01")
   const [end_date, setEndDate] = useState("2026-12-31")
   const [searchTerm, setSearchTerm] = useState("")
+  const [isLoading, setIsLoading] = useState(true) 
   
   const totalProfit = useMemo(() => {
     const sum = jobDates.reduce((total, row) => total + Number(row.price || 0), 0)
@@ -26,24 +27,29 @@ export default function JobsPage() {
     job.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     job.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  function loadJobs() {
+  
+  function loadAll() {
+    setIsLoading(true)
     setError(null)
-    getJobs()
-      .then(setJobs)
-      .catch((err) => setError(err.message))
-  }
-  function loadJobDates() {
-    setError(null)
-    getJobDates({start_date: start_date, end_date: end_date })
-      .then(setJobDates)
-      .catch((err) => setError(err.message))
-  }  
+    Promise.all([
+      getJobs().then(setJobs),
+      getJobDates({start_date: start_date, end_date: end_date }).then(setJobDates),
+    ])
+    .catch((err) => setError(err.message))
+    .finally(() => setIsLoading(false))
+}
   
   useEffect(() => {
-    loadJobs()
-    loadJobDates()
+    loadAll()
   }, [start_date, end_date])
+
+  if (isLoading) {
+    return (
+      <section className="flex min-h-screen flex-1 items-center justify-center bg-slate-50">
+        <Loader message="Loading jobs…" />
+      </section>
+    )
+  }
 
   return (
     <section className="flex-1 overflow-y-auto bg-slate-50 min-h-screen p-8">

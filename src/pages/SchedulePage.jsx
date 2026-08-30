@@ -6,6 +6,7 @@ import {
   previewSchedule,
 } from "../api/schedule"
 import { DAYS_OF_WEEK, jobDateStatusLabel, jobDayColor } from "../utils/jobDay"
+import Loader from "../components/Loader"
 
 function todayString() {
   const d = new Date()
@@ -28,17 +29,22 @@ export default function SchedulePage() {
   const [loading, setLoading] = useState(false)
   const [applying, setApplying] = useState(false)
   const [applyResult, setApplyResult] = useState(null)
-
+  const [isLoading, setIsLoading] = useState(true)
+  
   function loadUnassigned() {
+    setIsLoading(true)
     setError(null)
     getUnassignedJobs()
       .then(setUnassigned)
       .catch((err) => setError(err.message))
-  }
+      .finally(() => setIsLoading(false))
+    }
 
   useEffect(() => {
     loadUnassigned()
   }, [])
+
+
 
   async function handlePreview() {
     setLoading(true)
@@ -88,6 +94,14 @@ export default function SchedulePage() {
   const totalStops = preview
     ? Object.values(preview.routes).reduce((sum, r) => sum + r.stop_count, 0)
     : 0
+
+  if (isLoading) {
+    return (
+      <section className="flex min-h-screen flex-1 items-center justify-center bg-slate-50">
+        <Loader message="Loading schedule…" />
+      </section>
+    )
+  }
 
   return (
     <section className="flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-slate-50">

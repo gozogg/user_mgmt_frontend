@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react"
 import { deleteJobDate, getJobDates, updateJobDate } from "../api/jobDates"
 import DailyJobDateItem from "../components/DailyJobDateItem"
 import WeeklyJobDateItem from "../components/WeeklyJobDateItem"
+import Loader from "../components/Loader"
 
 function toDateString(d) {
   const month = String(d.getMonth() + 1).padStart(2, "0")
@@ -43,6 +44,7 @@ export default function WeeklyDashboard() {
   const [jobDates, setJobDates] = useState([])
   const [error, setError] = useState(null)
   const [savingKey, setSavingKey] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   const weekDays = useMemo(
     () => Array.from({ length: 7 }, (_, i) => toDateString(addDays(weekStart, i))),
@@ -66,16 +68,16 @@ export default function WeeklyDashboard() {
 
   useEffect(() => {
     setError(null)
-    getJobDates({ start_date, end_date })
-      .then(setJobDates)
-      .catch((err) => setError(err.message))
+    loadJobDates()
   }, [start_date, end_date])
 
   function loadJobDates() {
+    setIsLoading(true)
     setError(null)
     getJobDates({ start_date, end_date })
       .then(setJobDates)
       .catch((err) => setError(err.message))
+      .finally(() => setIsLoading(false))
   }
 
   async function handleStatusChange(row, status) {
@@ -131,6 +133,14 @@ export default function WeeklyDashboard() {
   }
 
   const rangeLabel = `${formatDayHeading(start_date)} – ${formatDayHeading(end_date)}`
+
+  if (isLoading) {
+    return (
+      <section className="flex min-h-screen flex-1 items-center justify-center bg-slate-50">
+        <Loader message="Loading weekly dashboard…" />
+      </section>
+    )
+  }
 
   return (
     <section className="flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-slate-50">

@@ -4,6 +4,7 @@ import { getClients } from "../api/clients"
 import { getJobs } from "../api/jobs"
 import { getJobDates } from "../api/jobDates"
 import { jobDateStatusClass, jobDateStatusLabel } from "../utils/jobDateStatus"
+import Loader from "../components/Loader"
 
 function today() {
   const d = new Date()
@@ -52,6 +53,7 @@ export default function HomePage() {
   const [jobsCount, setJobsCount] = useState(0)
   const [todaysJobs, setTodaysJobs] = useState([])
   const [error, setError] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
   const date = today()
 
   const completedToday = todaysJobs.filter((row) => row.status === "complete").length
@@ -67,7 +69,16 @@ export default function HomePage() {
         setTodaysJobs(jobDates)
       })
       .catch((err) => setError(err.message))
+      .finally(() => setIsLoading(false))
   }, [])
+
+  if (isLoading) {
+    return (
+      <section className="flex min-h-screen flex-1 items-center justify-center bg-slate-50">
+        <Loader message="Loading home…" />
+      </section>
+    )
+  }
 
   return (
     <section className="flex-1 overflow-y-auto bg-slate-50 min-h-screen p-8">
