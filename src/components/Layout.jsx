@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from "react-router-dom"
+import { useOrganization } from "./OrganizationProvider"
 
 const navItems = [
   { to: "/day", label: "Daily", icon: "fa-calendar-day" },
@@ -19,6 +20,8 @@ function linkClass({ isActive }) {
 }
 
 export default function Layout() {
+  const { organization } = useOrganization()
+
   return (
     <div className="flex h-screen bg-slate-50">
       <aside className="hidden h-screen w-64 shrink-0 flex-col border-r border-slate-900/40 bg-slate-900 md:flex">
@@ -28,7 +31,7 @@ export default function Layout() {
           </div>
           <div className="min-w-0">
             <NavLink to="/" className="block truncate text-sm font-semibold text-white">
-              User Management
+              {organization?.business_name || "User Management"}
             </NavLink>
             <p className="truncate text-xs text-slate-400">Jobs & clients</p>
           </div>
@@ -47,7 +50,13 @@ export default function Layout() {
         </nav>
 
         <div className="border-t border-slate-800 p-4">
-          <p className="text-xs text-slate-500">Manage schedules and clients</p>
+          <NavLink
+            to="/organization"
+            className="flex items-center gap-2 rounded-lg px-2 py-2 text-xs text-slate-400 transition hover:bg-slate-800 hover:text-slate-200"
+          >
+            <i className="fa-solid fa-building w-4 text-center"></i>
+            Organization settings
+          </NavLink>
         </div>
       </aside>
 

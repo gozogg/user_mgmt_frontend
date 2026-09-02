@@ -9,11 +9,14 @@ import JobDetailPage from "./pages/JobDetailPage"
 import HomePage from "./pages/HomePage"
 import MapPage from "./pages/MapPage"
 import SchedulePage from "./pages/SchedulePage"
+import OrganizationPage from "./pages/OrganizationPage"
+import { OrganizationProvider } from "./components/OrganizationProvider"
 import "@fortawesome/fontawesome-free/css/all.min.css"
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <OrganizationProvider>
+      <BrowserRouter>
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<HomePage/>} />
@@ -25,8 +28,10 @@ export default function App() {
           <Route path="/jobs/:id" element={<JobDetailPage />} />
           <Route path="/map" element={<MapPage />} />
           <Route path="/schedule" element={<SchedulePage />} />
+          <Route path="/organization" element={<OrganizationPage />} />
         </Route>
       </Routes>
-    </BrowserRouter>
+      </BrowserRouter>
+    </OrganizationProvider>
   )
 }
