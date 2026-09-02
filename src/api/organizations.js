@@ -1,10 +1,7 @@
-import { ORGANIZATION_ID, orgRequest } from "./http"
+import { orgRequest } from "./http"
 
 export function getOrganization() {
-  if (!ORGANIZATION_ID) {
-    return Promise.reject(new Error("ORGANIZATION_ID is not set"))
-  }
-  return orgRequest(`/organizations/${ORGANIZATION_ID}`)
+  return orgRequest("/organizations/me")
 }
 
 export function createOrganization(data) {

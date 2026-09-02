@@ -1,6 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react"
 import { getOrganization } from "../api/organizations"
-import { ORGANIZATION_ID } from "../api/http"
 import Loader from "./Loader"
 
 const OrganizationContext = createContext(null)
@@ -14,20 +13,18 @@ export function OrganizationProvider({ children }) {
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  const refreshOrganization = useCallback(() => {
-    if (!ORGANIZATION_ID) {
-      return Promise.resolve(null)
+  const refreshOrganization = useCallback((nextOrganization) => {
+    if (nextOrganization) {
+      setOrganization(nextOrganization)
+      return Promise.resolve(nextOrganization)
     }
-    return getOrganization().then(setOrganization)
+    return getOrganization().then((org) => {
+      setOrganization(org)
+      return org
+    })
   }, [])
 
   useEffect(() => {
-    if (!ORGANIZATION_ID) {
-      setError("ORGANIZATION_ID is not set in your environment")
-      setLoading(false)
-      return
-    }
-
     refreshOrganization()
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false))

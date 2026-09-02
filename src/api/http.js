@@ -1,78 +1,69 @@
+import { clearSession, getStoredToken, redirectToLogin } from "../auth/session"
+
 const API = import.meta.env.VITE_API_URL
-export const ORGANIZATION_ID = import.meta.env.VITE_ORGANIZATION_ID
 
-function requireOrgId() {
-  if (!ORGANIZATION_ID) {
-    throw new Error("ORGANIZATION_ID is not set")
+function authHeaders() {
+  const token = getStoredToken()
+  const headers = { "Content-Type": "application/json" }
+  if (token) {
+    headers.Authorization = `Bearer ${token}`
   }
-  return ORGANIZATION_ID
+  return headers
 }
 
-function withOrgQuery(path) {
-  const orgId = requireOrgId()
-  const [base, query = ""] = path.split("?")
-  const params = new URLSearchParams(query)
-  params.set("organization_id", orgId)
-  const qs = params.toString()
-  return `${base}?${qs}`
+async function parseBody(response) {
+  if (response.status === 204) {
+    return null
+  }
+  const text = await response.text()
+  if (!text) return null
+  try {
+    return JSON.parse(text)
+  } catch {
+    return text
+  }
 }
 
-function withOrgBody(body) {
-  const orgId = Number(requireOrgId())
-  if (!body) {
-    return JSON.stringify({ organization_id: orgId })
+function errorMessage(payload) {
+  if (payload && typeof payload === "object" && payload.error) {
+    return payload.error
   }
-  const parsed = typeof body === "string" ? JSON.parse(body) : body
-  return JSON.stringify({ ...parsed, organization_id: orgId })
+  if (typeof payload === "string" && payload.trim()) {
+    return payload
+  }
+  return "Request failed"
 }
 
 export async function request(path, options = {}) {
-  const method = (options.method || "GET").toUpperCase()
-  const usesQueryOrg = method === "GET" || method === "DELETE"
-  const url = usesQueryOrg ? withOrgQuery(path) : path
-  const body = usesQueryOrg ? options.body : withOrgBody(options.body)
+  const { body, headers, ...rest } = options
+  const serializedBody =
+    body == null || typeof body === "string" ? body : JSON.stringify(body)
 
-  const response = await fetch(`${API}${url}`, {
-    ...options,
-    body,
+  const response = await fetch(`${API}${path}`, {
+    ...rest,
+    body: serializedBody,
     headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
+      ...authHeaders(),
+      ...headers,
     },
   })
 
+  if (response.status === 401) {
+    clearSession()
+    redirectToLogin()
+    throw new Error("Please sign in")
+  }
+
+  const payload = await parseBody(response)
+
   if (!response.ok) {
-    throw new Error(await response.text())
+    throw new Error(errorMessage(payload))
   }
 
-  if (response.status === 204) {
-    return null
-  }
-
-  return response.json()
+  return payload
 }
 
-/** Organization endpoints — not scoped by organization_id. */
+/** Organization endpoints that only need the JWT, not a client-supplied org id. */
 export async function orgRequest(path, options = {}) {
-  console.log("orgRequest", path, options)
-  const body = typeof options.body === "string" ? options.body : JSON.stringify(options.body)
-  console.log("body", body)
-  const response = await fetch(`${API}${path}`, {
-    ...options,
-    body,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  })
-
-  if (!response.ok) {
-    throw new Error(await response.text())
-  }
-
-  if (response.status === 204) {
-    return null
-  }
-
-  return response.json()
+  return request(path, options)
 }
