@@ -2,7 +2,7 @@ import { ORGANIZATION_ID, orgRequest } from "./http"
 
 export function getOrganization() {
   if (!ORGANIZATION_ID) {
-    return Promise.reject(new Error("VITE_ORGANIZATION_ID is not set"))
+    return Promise.reject(new Error("ORGANIZATION_ID is not set"))
   }
   return orgRequest(`/organizations/${ORGANIZATION_ID}`)
 }

@@ -1,9 +1,9 @@
-const API = import.meta.env.VITE_API_URL
-export const ORGANIZATION_ID = import.meta.env.VITE_ORGANIZATION_ID
+const API = import.meta.env.API_URL
+export const ORGANIZATION_ID = import.meta.env.ORGANIZATION_ID
 
 function requireOrgId() {
   if (!ORGANIZATION_ID) {
-    throw new Error("VITE_ORGANIZATION_ID is not set")
+    throw new Error("ORGANIZATION_ID is not set")
   }
   return ORGANIZATION_ID
 }

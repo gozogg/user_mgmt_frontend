@@ -229,7 +229,7 @@ function CreateOrganizationForm() {
         <p className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
           Organization created (ID {created.id}). Set{" "}
           <code className="rounded bg-green-100 px-1.5 py-0.5 text-xs">
-            VITE_ORGANIZATION_ID={created.id}
+            ORGANIZATION_ID={created.id}
           </code>{" "}
           in your <code className="rounded bg-green-100 px-1.5 py-0.5 text-xs">.env</code>{" "}
           to use it.

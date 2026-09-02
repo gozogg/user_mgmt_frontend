@@ -23,7 +23,7 @@ export function OrganizationProvider({ children }) {
 
   useEffect(() => {
     if (!ORGANIZATION_ID) {
-      setError("VITE_ORGANIZATION_ID is not set in your environment")
+      setError("ORGANIZATION_ID is not set in your environment")
       setLoading(false)
       return
     }

@@ -32,9 +32,9 @@ export default function DailyMap({ center, zoom, jobs = [] }) {
   useEffect(() => {
     if (mapRef.current || !containerRef.current) return
 
-    const token = import.meta.env.VITE_MAPBOX_TOKEN
+    const token = import.meta.env.MAPBOX_TOKEN
     if (!token) {
-      console.error("Missing VITE_MAPBOX_TOKEN in .env")
+      console.error("Missing MAPBOX_TOKEN in .env")
       return
     }
 
