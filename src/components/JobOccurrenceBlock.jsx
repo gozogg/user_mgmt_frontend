@@ -1,4 +1,5 @@
 import { Link, useLocation } from "react-router-dom"
+import { jobStatusClass , jobStatusLabel} from "../utils/jobStatus"
 
 export default function JobOccurrenceBlock({ job }) {
   const isOnetime = job.frequency === "onetime"
@@ -18,12 +19,14 @@ export default function JobOccurrenceBlock({ job }) {
           </h2>
           <p className="text-xs text-slate-500">{job.first_name} {job.last_name}</p>
         </div>
-        {job.frequency && (
-          <span className="shrink-0 rounded-md bg-slate-100 px-2 py-1 text-xs font-medium capitalize text-slate-700">
-            {job.frequency}
-          </span>
+        {job.status && (
+          <div className={`rounded-md px-2 py-1 text-xs font-medium capitalize ${jobStatusClass(job.status)}`}>
+            {jobStatusLabel(job.status)}
+          </div>
         )}
       </div>
+
+      <div className="flex items-end justify-between mt-auto">
 
       <div className="mt-auto space-y-2 text-sm text-slate-600">
         {isOnetime ? (
@@ -58,6 +61,12 @@ export default function JobOccurrenceBlock({ job }) {
             <i className="fa-solid fa-dollar-sign w-4 text-center text-slate-400"></i>
             <span>${price.toFixed(2)}</span>
           </div>
+        )}
+        </div>
+        {job.frequency && (
+          <span className="shrink-0 rounded-md bg-slate-100 px-2 py-1 text-xs font-medium capitalize text-slate-700">
+            {job.frequency}
+          </span>
         )}
       </div>
     </Link>
