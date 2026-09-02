@@ -11,7 +11,7 @@ export default function FullMap({ center, zoom, jobs = [] }) {
   useEffect(() => {
     if (mapRef.current || !containerRef.current) return
 
-    const token = import.meta.env.MAPBOX_TOKEN
+    const token = import.meta.env.VITE_MAPBOX_TOKEN
     if (!token) {
       console.error("Missing MAPBOX_TOKEN in .env")
       return
