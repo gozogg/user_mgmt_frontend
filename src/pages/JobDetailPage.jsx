@@ -265,8 +265,7 @@ export default function JobDetailPage() {
               onCancel={() => setFormOpened(false)}
               onSuccess={() => {
                 setFormOpened(false)
-                loadJob()
-                loadJobDates()
+                loadAll()
               }}
               default_start_date={organization.default_start_date}
               default_end_date={organization.default_end_date}

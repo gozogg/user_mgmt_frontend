@@ -1,4 +1,5 @@
-export const JOB_DATE_STATUSES = ["active", "completed", "future", "cancelled"]
+export const JOB_STATUSES = ["active", "completed", "future", "cancelled"]
+export const JOB_DATE_STATUSES = JOB_STATUSES
 
 export function jobStatusLabel(status) {
   return (

@@ -10,6 +10,7 @@ export default function NewJobForm({ onCancel, onSuccess, client_id, job, defaul
   const isEdit = Boolean(job?.id)
   const [frequency, setFrequency] = useState(job?.frequency || "onetime")
   const [day_of_week, setDayOfWeek] = useState(job?.day_of_week || "")
+  const [status, setStatus] = useState(job?.status || "active")
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -22,6 +23,7 @@ export default function NewJobForm({ onCancel, onSuccess, client_id, job, defaul
       end_date: formData.get("end_date") || null,
       day_of_week: formData.get("day_of_week") || null,
       description: formData.get("description"),
+      status: formData.get("status"),
     }
 
     if (isEdit) {
@@ -43,7 +45,7 @@ export default function NewJobForm({ onCancel, onSuccess, client_id, job, defaul
             id="description"
             type="text"
             name="description"
-            defaultValue={job?.description ?? frequency === "onetime" ? "" : "Lawn Mowing"}
+            defaultValue={job?.description ?? (frequency === "onetime" ? "" : "Lawn Mowing")}
             required
             className={fieldClass}
           />
@@ -90,7 +92,8 @@ export default function NewJobForm({ onCancel, onSuccess, client_id, job, defaul
         </div>
 
         {frequency === "onetime" ? (
-          <div className="sm:col-span-2">
+          <>
+          <div>
             <label htmlFor="start_date" className={labelClass}>
               Date
             </label>
@@ -103,6 +106,24 @@ export default function NewJobForm({ onCancel, onSuccess, client_id, job, defaul
               className={fieldClass}
             />
           </div>
+          <div>
+          <label htmlFor="status" className={labelClass}>
+            Status
+          </label>
+          <select
+            id="status"
+            name="status"
+            defaultValue={job?.status ?? ""}
+            className={fieldClass}
+            onChange={(e) => setStatus(e.target.value)}
+          >
+            <option value="active">Active</option>
+            <option value="completed">Completed</option>
+            <option value="future">Future</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+        </>
         ) : (
           <>
             <div>
@@ -133,7 +154,7 @@ export default function NewJobForm({ onCancel, onSuccess, client_id, job, defaul
               />
             </div>
 
-            <div className="sm:col-span-2">
+            <div>
               <label htmlFor="day_of_week" className={labelClass}>
                 Day of the week
               </label>
@@ -144,7 +165,7 @@ export default function NewJobForm({ onCancel, onSuccess, client_id, job, defaul
                 className={fieldClass}
                 onChange={(e) => setDayOfWeek(e.target.value)}
               >
-                <option value="">Generate through Scheduler</option>
+                <option value="">Generate Later</option>
                 <option value="monday">Monday</option>
                 <option value="tuesday">Tuesday</option>
                 <option value="wednesday">Wednesday</option>
@@ -152,6 +173,23 @@ export default function NewJobForm({ onCancel, onSuccess, client_id, job, defaul
                 <option value="friday">Friday</option>
                 <option value="saturday">Saturday</option>
                 <option value="sunday">Sunday</option>
+              </select>
+            </div> 
+            <div>
+              <label htmlFor="status" className={labelClass}>
+                Status
+              </label>
+              <select
+                id="status"
+                name="status"
+                defaultValue={job?.status ?? ""}
+                className={fieldClass}
+                onChange={(e) => setStatus(e.target.value)}
+              >
+                <option value="active">Active</option>
+                <option value="completed">Completed</option>
+                <option value="future">Future</option>
+                <option value="cancelled">Cancelled</option>
               </select>
             </div>
 
