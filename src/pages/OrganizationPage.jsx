@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import {
   createOrganization,
   updateOrganization,
@@ -18,22 +18,34 @@ function formatDate(value) {
 function OrganizationForm({ organization, onSuccess }) {
   const [error, setError] = useState(null)
   const [saving, setSaving] = useState(false)
+  const [businessName, setBusinessName] = useState(organization.business_name ?? "")
+  const [startDate, setStartDate] = useState(formatDate(organization.default_start_date))
+  const [endDate, setEndDate] = useState(formatDate(organization.default_end_date))
+  const [alertDays, setAlertDays] = useState(organization.alert_days ?? 14)
+  const [alertEmail, setAlertEmail] = useState(organization.alert_email ?? "")
+
+  useEffect(() => {
+    setBusinessName(organization.business_name ?? "")
+    setStartDate(formatDate(organization.default_start_date))
+    setEndDate(formatDate(organization.default_end_date))
+  }, [organization])
 
   async function handleSubmit(e) {
     e.preventDefault()
     setSaving(true)
     setError(null)
 
-    const formData = new FormData(e.currentTarget)
     const body = {
-      business_name: formData.get("business_name"),
-      default_start_date: formData.get("default_start_date") || null,
-      default_end_date: formData.get("default_end_date") || null,
+      business_name: businessName,
+      default_start_date: startDate || null,
+      default_end_date: endDate || null,
+      alert_days: alertDays || null,
+      alert_email: alertEmail || null,
     }
 
     try {
-      await updateOrganization(organization.id, body)
-      onSuccess()
+      const updated = await updateOrganization(organization.id, body)
+      onSuccess(updated)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -52,7 +64,8 @@ function OrganizationForm({ organization, onSuccess }) {
           name="business_name"
           type="text"
           required
-          defaultValue={organization.business_name ?? ""}
+          value={businessName}
+          onChange={(e) => setBusinessName(e.target.value)}
           className={fieldClass}
         />
       </div>
@@ -66,7 +79,8 @@ function OrganizationForm({ organization, onSuccess }) {
             id="default_start_date"
             name="default_start_date"
             type="date"
-            defaultValue={formatDate(organization.default_start_date)}
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
             className={fieldClass}
           />
         </div>
@@ -78,7 +92,36 @@ function OrganizationForm({ organization, onSuccess }) {
             id="default_end_date"
             name="default_end_date"
             type="date"
-            defaultValue={formatDate(organization.default_end_date)}
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            className={fieldClass}
+          />
+        </div>
+      </div>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div>
+          <label htmlFor="alert_days" className={labelClass}>
+            Alert days
+          </label>
+          <input
+            id="alert_days"
+            name="alert_days"
+            type="number"
+            value={alertDays}
+            onChange={(e) => setAlertDays(e.target.value)}
+            className={fieldClass}
+          />
+        </div>
+        <div>
+          <label htmlFor="alert_email" className={labelClass}>
+            Alert email
+          </label>
+          <input
+            id="alert_email"
+            name="alert_email"
+            type="email"
+            value={alertEmail}
+            onChange={(e) => setAlertEmail(e.target.value)}
             className={fieldClass}
           />
         </div>
@@ -120,6 +163,8 @@ function CreateOrganizationForm() {
       business_name: formData.get("business_name"),
       default_start_date: formData.get("default_start_date") || null,
       default_end_date: formData.get("default_end_date") || null,
+      alert_days: formData.get("alert_days") || null,
+      alert_email: formData.get("alert_email") || null,
     }
 
     try {
@@ -209,8 +254,8 @@ export default function OrganizationPage() {
   const { organization, refreshOrganization } = useOrganization()
   const [saved, setSaved] = useState(false)
 
-  async function handleSaveSuccess() {
-    await refreshOrganization()
+  async function handleSaveSuccess(updated) {
+    await refreshOrganization(updated)
     setSaved(true)
     setTimeout(() => setSaved(false), 3000)
   }
@@ -225,7 +270,7 @@ export default function OrganizationPage() {
           Organization
         </h1>
         <p className="mt-1 text-slate-600">
-          Manage your business profile and default schedule dates
+          Manage your business profile and default schedule dates. Alert emails will be sent to the email address below when jobs are completed and not invoiced past the specified number of days.
         </p>
       </header>
 
@@ -240,9 +285,9 @@ export default function OrganizationPage() {
           <h2 className="text-lg font-semibold text-slate-900">
             Current organization
           </h2>
-          <p className="mt-1 text-sm text-slate-600">
+          {/* <p className="mt-1 text-sm text-slate-600">
             ID {ORGANIZATION_ID} · changes apply to this workspace
-          </p>
+          </p> */}
           <div className="mt-5">
             {organization ? (
               <OrganizationForm
@@ -255,7 +300,7 @@ export default function OrganizationPage() {
           </div>
         </div>
 
-        <div className="rounded-xl border border-dashed border-slate-300 bg-white p-6 shadow-sm">
+        {/* <div className="rounded-xl border border-dashed border-slate-300 bg-white p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-slate-900">
             Create new organization
           </h2>
@@ -266,7 +311,7 @@ export default function OrganizationPage() {
           <div className="mt-5">
             <CreateOrganizationForm />
           </div>
-        </div>
+        </div> */}
       </div>
     </section>
   )

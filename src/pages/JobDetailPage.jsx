@@ -3,6 +3,7 @@ import { useEffect, useState, useMemo } from "react"
 import { deleteJob, getJobs } from "../api/jobs"
 import { getJobDates, updateJobDate } from "../api/jobDates"
 import NewJobForm from "../components/NewJobForm"
+import { useOrganization } from "../components/OrganizationProvider"
 import {
   JOB_DATE_STATUSES,
   jobDateStatusClass,
@@ -28,6 +29,7 @@ export default function JobDetailPage() {
   const location = useLocation()
   const backTo = location.state?.from ?? "/jobs"
   const [isLoading, setIsLoading] = useState(true)
+  const { organization } = useOrganization()
 
   const totalProfit = useMemo(() => {
     const sum = jobDates.reduce((total, row) => total + Number(row.price || 0), 0)
@@ -266,6 +268,8 @@ export default function JobDetailPage() {
                 loadJob()
                 loadJobDates()
               }}
+              default_start_date={organization.default_start_date}
+              default_end_date={organization.default_end_date}
             />
           </div>
         </div>

@@ -6,7 +6,7 @@ const fieldClass =
   "mt-1.5 block w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
 const labelClass = "block text-sm font-medium text-slate-700"
 
-export default function NewJobForm({ onCancel, onSuccess, client_id, job }) {
+export default function NewJobForm({ onCancel, onSuccess, client_id, job, default_start_date, default_end_date }) {
   const isEdit = Boolean(job?.id)
   const [frequency, setFrequency] = useState(job?.frequency || "onetime")
   const [day_of_week, setDayOfWeek] = useState(job?.day_of_week || "")
@@ -43,9 +43,8 @@ export default function NewJobForm({ onCancel, onSuccess, client_id, job }) {
             id="description"
             type="text"
             name="description"
-            defaultValue={job?.description ?? ""}
+            defaultValue={job?.description ?? frequency === "onetime" ? "" : "Lawn Mowing"}
             required
-            placeholder="Lawn mowing"
             className={fieldClass}
           />
         </div>
@@ -99,7 +98,7 @@ export default function NewJobForm({ onCancel, onSuccess, client_id, job }) {
               id="start_date"
               type="date"
               name="start_date"
-              defaultValue={job?.start_date ?? ""}
+              defaultValue={job?.start_date ?? default_start_date ?? ""}
               required
               className={fieldClass}
             />
@@ -114,7 +113,7 @@ export default function NewJobForm({ onCancel, onSuccess, client_id, job }) {
                 id="start_date"
                 type="date"
                 name="start_date"
-                defaultValue={job?.start_date ?? ""}
+                defaultValue={job?.start_date ?? default_start_date ?? ""}
                 required
                 className={fieldClass}
               />
@@ -128,7 +127,7 @@ export default function NewJobForm({ onCancel, onSuccess, client_id, job }) {
                 id="end_date"
                 type="date"
                 name="end_date"
-                defaultValue={job?.end_date ?? ""}
+                defaultValue={job?.end_date ?? default_end_date ?? ""}
                 required
                 className={fieldClass}
               />

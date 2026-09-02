@@ -5,6 +5,7 @@ import { getJobDates } from "../api/jobDates"
 import { useState, useEffect, useMemo } from "react"
 import JobList from "../components/JobList"
 import NewJobForm from "../components/NewJobForm"
+import { useOrganization } from "../components/OrganizationProvider"
 import NewClientForm from "../components/NewClientForm"
 import ClientMap from "../components/ClientMap"
 import PlantLoader from "../components/PlantLoader"
@@ -13,6 +14,7 @@ import Loader from "../components/Loader"
 export default function ClientDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { organization } = useOrganization()
   const [jobs, setJobs] = useState([])
   const [jobDates, setJobDates] = useState([])
   const [client, setClient] = useState({})
@@ -175,6 +177,8 @@ export default function ClientDetailPage() {
                 setJobFormOpened(false)
                 loadAll()
               }}
+              default_start_date={organization.default_start_date}
+              default_end_date={organization.default_end_date}
             />
           </div>
         </div>

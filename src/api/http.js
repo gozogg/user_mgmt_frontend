@@ -54,17 +54,16 @@ export async function request(path, options = {}) {
 
 /** Organization endpoints — not scoped by organization_id. */
 export async function orgRequest(path, options = {}) {
+  console.log("orgRequest", path, options)
+  const body = typeof options.body === "string" ? options.body : JSON.stringify(options.body)
+  console.log("body", body)
   const response = await fetch(`${API}${path}`, {
     ...options,
+    body,
     headers: {
       "Content-Type": "application/json",
       ...options.headers,
     },
-    body: options.body
-      ? typeof options.body === "string"
-        ? options.body
-        : JSON.stringify(options.body)
-      : undefined,
   })
 
   if (!response.ok) {

@@ -6,8 +6,10 @@ import { getJobs } from "../api/jobs"
 import { useState, useEffect, useMemo } from "react"
 import { getJobDates } from "../api/jobDates"
 import Loader from "../components/Loader"
+import { useOrganization } from "../components/OrganizationProvider"
 
 export default function JobsPage() {
+  const { organization } = useOrganization()
   const [jobs, setJobs] = useState([])
   const [formOpened, setFormOpened] = useState(false)
   const [jobDates, setJobDates] = useState([])
@@ -116,6 +118,8 @@ export default function JobsPage() {
               setFormOpened(false)
               loadJobs()
             }}
+            default_start_date={organization.default_start_date}
+            default_end_date={organization.default_end_date}
           />
         </div>
       </div>
