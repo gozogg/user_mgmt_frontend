@@ -1,6 +1,6 @@
 import { Link, useNavigate, useParams, useLocation } from "react-router-dom"
 import { useEffect, useState, useMemo } from "react"
-import { deleteJob, getJobs } from "../api/jobs"
+import { deleteJob, getJobs, updateJob } from "../api/jobs"
 import { getJobDates, updateJobDate } from "../api/jobDates"
 import NewJobForm from "../components/NewJobForm"
 import { useOrganization } from "../components/OrganizationProvider"
@@ -12,6 +12,7 @@ import {
 } from "../utils/jobDateStatus"
 import Loader from "../components/Loader"
 import { LottieLoading } from "lottie-react"
+import { JOB_STATUSES, jobStatusClass, jobStatusLabel } from "../utils/jobStatus"
 
 function formatDate(value) {
   if (!value) return ""
@@ -30,6 +31,7 @@ export default function JobDetailPage() {
   const backTo = location.state?.from ?? "/jobs"
   const [isLoading, setIsLoading] = useState(true)
   const { organization } = useOrganization()
+  const [status, setStatus] = useState("")
 
   const totalProfit = useMemo(() => {
     const sum = jobDates.reduce((total, row) => total + Number(row.price || 0), 0)
@@ -43,7 +45,10 @@ export default function JobDetailPage() {
     setIsLoading(true)
     setError(null)
     Promise.all([
-      getJobs({ job_id: id }).then((data) => setJob(data[0] ?? null)),
+      getJobs({ job_id: id }).then((data) => {
+        setJob(data[0] ?? null)
+        setStatus(data[0]?.status || "")
+      }),
       getJobDates({ job_id: id }).then(setJobDates),
     ])
     .catch((err) => setError(err.message))
@@ -78,6 +83,17 @@ export default function JobDetailPage() {
     try {
       await deleteJob(id)
       navigate(job?.client_id ? `/clients/${job.client_id}` : "/jobs")
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
+  async function handleCancel() {
+    if (!window.confirm("Cancel this job and all of its non completed dates?")) return
+    setError(null)
+    try {
+      await updateJob(id, {status: 'cancelled'})
+      setStatus('cancelled')
     } catch (err) {
       setError(err.message)
     }
@@ -124,6 +140,15 @@ export default function JobDetailPage() {
           >
             <i className="fa-solid fa-pencil text-xs"></i>
             Edit job
+          </button>
+          <button
+            type="button"
+            onClick={handleCancel}
+            disabled={status == 'cancelled'}
+            className={`inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-white transition ${status === "active" ? "bg-gray-700 hover:bg-gray-600" : "bg-gray-400 cursor-not-allowed"}`}
+          >
+            <i className="fa-solid fa-x text-xs"></i>
+            Cancel Job
           </button>
           <button
             type="button"
@@ -180,24 +205,23 @@ export default function JobDetailPage() {
           </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-          <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Dates</p>
-          <p className="mt-3 text-2xl font-semibold text-slate-900">{jobDates.length}</p>
-        </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm ">
           <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Completed</p>
           <p className="mt-3 text-2xl font-semibold text-slate-900">{completedCount}</p>
-        </div>
-
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-          <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Invoiced</p>
+          <p className="text-xs font-medium uppercase tracking-wide text-slate-500 mt-4">Invoiced</p>
           <p className="mt-3 text-2xl font-semibold text-slate-900">{invoicedCount}</p>
         </div>
+
+        <div className={`rounded-xl border p-4 shadow-sm ${jobStatusClass(status)}`}>
+          <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Status</p>
+          <p className="mt-3 text-2xl font-semibold text-slate-900">{jobStatusLabel(status)}</p>
+        </div>
+
       </div>
 
       <div className="mb-4">
-        <h2 className="text-lg font-semibold text-slate-900">Scheduled dates</h2>
+        <h2 className="text-lg font-semibold text-slate-900">Scheduled dates ({jobDates.length})</h2>
         <p className="mt-1 text-sm text-slate-500">
           Update status to not complete, complete, or invoiced.
         </p>
