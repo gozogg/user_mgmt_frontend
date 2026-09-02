@@ -12,14 +12,18 @@ export default function NewJobForm({ onCancel, onSuccess, client_id, job, defaul
   const [day_of_week, setDayOfWeek] = useState(job?.day_of_week || "")
 
   async function handleSubmit(e) {
-    e.preventDefault()
+    e.preventDefault() 
     const formData = new FormData(e.currentTarget)
+    let end_date = formData.get("end_date") || null
+    if (frequency == 'onetime') {
+      end_date = formData.get("start_date")
+    }
     const body = {
       client_id: client_id || job?.client_id,
       frequency: formData.get("frequency"),
       price: formData.get("price"),
       start_date: formData.get("start_date"),
-      end_date: formData.get("end_date") || null,
+      end_date: end_date,
       day_of_week: formData.get("day_of_week") || null,
       description: formData.get("description"),
     }

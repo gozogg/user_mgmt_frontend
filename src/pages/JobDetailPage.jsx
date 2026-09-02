@@ -182,7 +182,7 @@ export default function JobDetailPage() {
                 <i className="fa-solid fa-calendar-days w-4 text-center text-slate-400"></i>
                 <span>
                   {formatDate(job.start_date)}
-                  {job.end_date ? ` – ${formatDate(job.end_date)}` : ""}
+                  {job.frequency != 'onetime' ? ` – ${formatDate(job.end_date)}` : ""}
                 </span>
               </div>
             )}
