@@ -1,4 +1,6 @@
+import { useState } from "react"
 import { createClient, updateClient } from "../api/clients"
+import { geocodeAddress } from "../api/geocode"
 
 const fieldClass =
   "mt-1.5 block w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
@@ -6,25 +8,41 @@ const labelClass = "block text-sm font-medium text-slate-700"
 
 export default function NewClientForm({ onCancel, onSuccess, client }) {
   const isEdit = Boolean(client?.id)
+  const [error, setError] = useState(null)
+  const [saving, setSaving] = useState(false)
 
   async function handleSubmit(e) {
     e.preventDefault()
+    setSaving(true)
+    setError(null)
+
     const formData = new FormData(e.currentTarget)
+    const address = formData.get("address")
+    const city = formData.get("city")
     const body = {
       first_name: formData.get("first_name"),
       last_name: formData.get("last_name"),
       email: formData.get("email"),
       phone_number: formData.get("phone_number"),
-      address: formData.get("address"),
-      city: formData.get("city"),
+      address,
+      city,
     }
 
-    if (isEdit) {
-      await updateClient(client.id, body)
-    } else {
-      await createClient(body)
+    try {
+      const coords = await geocodeAddress({ address, city })
+      Object.assign(body, coords)
+
+      if (isEdit) {
+        await updateClient(client.id, body)
+      } else {
+        await createClient(body)
+      }
+      onSuccess()
+    } catch (err) {
+      setError(err.message || "Could not save client")
+    } finally {
+      setSaving(false)
     }
-    onSuccess()
   }
 
   return (
@@ -121,20 +139,28 @@ export default function NewClientForm({ onCancel, onSuccess, client }) {
         </div>
       </div>
 
+      {error && (
+        <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </p>
+      )}
+
       <div className="flex items-center justify-end gap-3 border-t border-slate-200 pt-5">
         <button
           type="button"
           onClick={onCancel}
-          className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+          disabled={saving}
+          className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
         >
           Cancel
         </button>
         <button
           type="submit"
-          className="inline-flex items-center gap-2 rounded-lg bg-slate-800 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-slate-700"
+          disabled={saving}
+          className="inline-flex items-center gap-2 rounded-lg bg-slate-800 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-slate-700 disabled:opacity-60"
         >
-          <i className="fa-solid fa-check text-xs"></i>
-          {isEdit ? "Update client" : "Save client"}
+          <i className={`fa-solid ${saving ? "fa-spinner fa-spin" : "fa-check"} text-xs`}></i>
+          {saving ? "Saving…" : isEdit ? "Update client" : "Save client"}
         </button>
       </div>
     </form>
